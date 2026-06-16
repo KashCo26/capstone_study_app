@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create a Note</title>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="note_name" placeholder="Enter note name..." required>
+        <button type="submit">Create Folder</button>
+    </form>
+</head>
+<body>
