@@ -10,22 +10,27 @@
             <form method="POST">
                 {% csrf_token %}
                 <input type="text" id="sample-input" class="modern-input" name="note_name" placeholder="Enter note name..." required>
+                <div id="folderPopup" class="popup-menu">
+                    <select name="selected_folder" id="folder-select" class="dropdown-style">
+                    <option value="">Choose folder</option>
+                    
+                    {% for folder in folders %}
+                        <option value="{{ folder.id }}">{{ folder.name }}</option>
+                    {% empty %}
+                        <option value="" disabled>No folders available. Create one first!</option>
+                    {% endfor %}
+                    </select>
+                </div>
+                <br>
+                <textarea id="doc-box" name="note_text" class="underline-doc-box" placeholder="Start typing your study notes here..."></textarea>
+                <br>
+                <button type="submit" class="save-btn">Save</button>
             </form>
-    </h1>
-
-
-    <div id="folderPopup" class="popup-menu">
-        <select name="selected_folder" id="folder-select" class="dropdown-style">
-        <option value="">Choose folder</option>
-        
-        {% for folder in folders %}
-            <option value="{{ folder.id }}">{{ folder.name }}</option>
-        {% empty %}
-            <option value="" disabled>No folders available. Create one first!</option>
-        {% endfor %}
-        </select>
-    </div>
+        <a href="/notes/"><button class="cancel-btn">Cancel</button>
+        <div class="input-container">
+       
 </div>
+    </h1>
 
 <style>
         .dropdown-style {
@@ -69,18 +74,9 @@
         border-color: #607A66;
         background-color: #ffffff;
         box-shadow: 0 0 0 4px rgba(96, 122, 102, 0.15);
-        outline: none;
+        outline: none; 
+    }
 </style>
-
-<br>
-
-<div class="input-container">
-    <textarea id="doc-box" name="document_notes" class="underline-doc-box" placeholder="Start typing your study notes here..."></textarea>
-    <br>
-    <div class="btns-wrapper">
-    <button class="save-btn">Save</button>
-    <button class="cancel-btn">Cancel</button>
-</div>
 
 <style>
     /* Wrapper container for layout alignment */
