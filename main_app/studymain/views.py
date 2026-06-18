@@ -20,7 +20,23 @@ def create_note(request):
     if request.method == 'POST':
         note_name = request.POST.get('note_name')
         note_text = request.POST.get('note_text')
-        if note_name and note_text:
-            Notes.objects.create(name=note_name, text=note_text)
+        folder_id = request.POST.get('selected_folder')
+        chosen_folder = None
+        if folder_id:
+            chosen_folder = Folder.objects.get(id=folder_id)
+        if note_name and note_text and chosen_folder:
+            Notes.objects.create(name=note_name, text=note_text, folder=chosen_folder)
             return redirect('notes')
     return render(request, 'newnote.html', {'folders': folders})
+
+def display_notes(request, folder_name):
+    notes_match = None
+    if folder_name:
+        notes_match = Notes.objects.filter(folder__name__iexact=folder_name)
+    else:
+        notes_match = Notes.objects.filter(folder__name__iexact=folder_name)
+        
+    return render(request, 'display_notes.html', {
+        'notes': notes_match,
+        'searched_folder': folder_name
+    })

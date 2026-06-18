@@ -1,0 +1,22 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Folder Notes</title>
+</head>
+
+
+<form method="GET">
+    <h1>Notes inside folder: "{{ searched_folder }}"</h1>
+
+    <div class="notes-container">
+        {% for note in notes %}
+            <div class="note-card">
+                <h3>{{ note.name }}</h3>
+                <p>{{ note.text|truncatechars:60 }}</p> 
+                <small>Created: {{ note.created_at|date:"Y-m-d" }}</small>
+            </div>
+        {% empty %}
+            <p>No notes found for this folder.</p>
+        {% endfor %}
+    </div>
+</form>

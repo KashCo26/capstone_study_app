@@ -229,16 +229,43 @@
 
     <hr>
 
-    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
         {% for folder in folders %}
-            <div style="border: 2px solid #FFA500; background-color: #FFF8DC; padding: 20px; border-radius: 8px; text-align: center; width: 100px;">
-                📁 <br>
-                <strong>{{ folder.name }}</strong>
+            <div> 
+                <button type="button" class="folder-btn" onclick="goToFolder('{{ folder.name|escapejs }}')" style="text-align: center;">
+                📁<br>
+                <strong>{{ folder.name }}</strong></button>
             </div>
         {% empty %}
             <p>No folders created yet. Start by creating one using the plus button above!</p>
         {% endfor %}
     </div>
+
+<script>
+    function goToFolder(folderName) {
+        if (folderName) {
+            var folderName = encodeURIComponent(folderName);
+            window.location.href = "/viewnotes/" + folderName + "/";
+        }
+    }
+</script>
+
+<style>
+    .folder-btn {
+        width: 150px;
+        background-color: #FFF8DC;
+        padding: 30px;
+        border: 2px solid #FFA500;
+        border-radius: 8px;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, transform 0.1s;
+    }
+    .folder-btn:hover {
+        background-color: #feeeafd3;
+        cursor: pointer;
+    }
+</style>
 
 </body>
 </html>
