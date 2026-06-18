@@ -4,19 +4,155 @@
     <title>Folder Notes</title>
 </head>
 
+<div class="page-wrapper">
+    <form method="GET">
+        <div class="heading"> 
+            <h1>Notes inside folder: "{{ searched_folder }}"</h1>
+        </div>
 
-<form method="GET">
-    <h1>Notes inside folder: "{{ searched_folder }}"</h1>
+        <div class="notes-container">
+            {% for note in notes %}
+                <div>
+                    <button class="note-card">
+                        <h3>{{ note.name }}</h3>
+                        <p>{{ note.text|truncatechars:60 }}...</p> 
+                        <small>Created: {{ note.created_at|date:"m-d-Y" }}</small>
+                    </button>
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    <p class="empty-message">No notes found for this folder.</p>
+                    <a href="/newnote/" class="create-link">
+                        <button type="button" class="create-card">+ Create a note</button>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </form>
+</div>
 
-    <div class="notes-container">
-        {% for note in notes %}
-            <div class="note-card">
-                <h3>{{ note.name }}</h3>
-                <p>{{ note.text|truncatechars:60 }}</p> 
-                <small>Created: {{ note.created_at|date:"Y-m-d" }}</small>
-            </div>
-        {% empty %}
-            <p>No notes found for this folder.</p>
-        {% endfor %}
-    </div>
-</form>
+<style>
+    .page-wrapper {
+        background-color: #f4f6f9;
+        min-height: 100vh;
+        padding: 30px;
+        box-sizing: border-box;
+    }
+
+    .heading h1 {
+        font-family: Arial, sans-serif;
+        font-size: 1.75rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-top: 0;
+        margin-bottom: 25px;
+    }
+
+    .notes-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .notes-container > div {
+        display: flex;
+    }
+
+    .note-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eef2f5;
+        
+        width: 100%;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .note-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .note-card h3 {
+        margin: 0 0 12px 0;
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: #0f172a;
+        text-align: left;
+    }
+
+    .note-card p {
+        margin: 0 0 15px 0;
+        color: #64748b;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        text-align: left;
+        flex-grow: 1;
+    }
+
+    .note-card small {
+        display: block;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        text-align: left;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 10px;
+        width: 100%;
+    }
+
+    /* Elegant Empty State Styling */
+    .empty-state {
+        grid-column: 1 / -1; /* Stretch across the grid columns */
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .empty-message {
+        font-family: Arial, sans-serif;
+        color: #64748b;
+        font-style: italic;
+        margin: 0;
+    }
+
+    .create-link {
+        text-decoration: none; /* Removes any default anchor underline */
+    }
+
+    /* Beautifully Polished Create Button */
+    .create-card {
+        font-family: Arial, sans-serif;
+        padding: 10px 20px;
+        background-color: #2ecc71; /* High contrast energetic green */
+        color: #ffffff;            /* White text stands out better than black */
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0px 4px 10px rgba(46, 204, 113, 0.2);
+        transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .create-card:hover {
+        background-color: #27ae60;
+        transform: translateY(-1px);
+    }
+
+    .create-card:active {
+        transform: translateY(1px);
+    }
+</style>
+</html>
