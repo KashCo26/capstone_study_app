@@ -7,7 +7,7 @@
 <div class="page-wrapper">
     <form method="GET">
         <div class="heading"> 
-            <h1>Notes inside folder: "{{ searched_folder }}"</h1>
+            <h1>Notes inside folder: {{ searched_folder }}</h1>
         </div>
 
         <div class="notes-container">
@@ -22,11 +22,11 @@
             {% empty %}
                 <div class="empty-state">
                     <p class="empty-message">No notes found for this folder.</p>
-                    <a href="/newnote/" class="create-link">
-                        <button type="button" class="create-card">+ Create a note</button>
-                    </a>
                 </div>
             {% endfor %}
+            <a href="/newnote/" class="create-link">
+                <button type="button" class="create-card">+ Create a note</button>
+            </a>
         </div>
     </form>
 </div>
@@ -108,7 +108,6 @@
         width: 100%;
     }
 
-    /* Elegant Empty State Styling */
     .empty-state {
         grid-column: 1 / -1; /* Stretch across the grid columns */
         display: flex;
@@ -125,15 +124,17 @@
     }
 
     .create-link {
-        text-decoration: none; /* Removes any default anchor underline */
+        text-decoration: none;
+        position: absolute;
+        top: 30;
+        right: 20;
     }
 
-    /* Beautifully Polished Create Button */
     .create-card {
         font-family: Arial, sans-serif;
         padding: 10px 20px;
-        background-color: #2ecc71; /* High contrast energetic green */
-        color: #ffffff;            /* White text stands out better than black */
+        background-color: #2ecc71;
+        color: #ffffff;
         border: none;
         border-radius: 8px;
         font-size: 0.95rem;

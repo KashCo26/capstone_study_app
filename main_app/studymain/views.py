@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from .models import Folder, Notes
 
 folders = Folder.objects.all()
@@ -10,10 +11,20 @@ def home_screen(request):
 def study_notes(request):
     if request.method == 'POST':
         folder_name = request.POST.get('folder_name')
+        folder_id = request.POST.get('folder_id')
+        new_name = request.POST.get('new_folder_name')
+        
         if folder_name:
-            Folder.objects.create(name=folder_name)
+            Folder.objects.create(name=folder_name.strip())
             return redirect('notes')
-
+        
+        
+        elif folder_id and new_name:
+            folder = get_object_or_404(Folder, id=folder_id)
+            folder.name = new_name.strip()
+            folder.save()
+            return redirect('notes')
+        
     return render(request, 'notes.html', {'folders': folders})
 
 def create_note(request):
