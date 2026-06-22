@@ -47,10 +47,27 @@ def create_note(request):
 
 def display_notes(request, folder_name):
     notes_match = None
+    
     if folder_name:
         notes_match = Notes.objects.filter(folder__name__iexact=folder_name)
     else:
         notes_match = Notes.objects.filter(folder__name__iexact=folder_name)
+        
+    if request.method == 'POST':
+        note_id = request.POST.get('note_id')
+        new_name = request.POST.get('new_note_name')
+        deleted_note_id = request.POST.get('deleted_note')
+        
+        if note_id and new_name:
+            note = get_object_or_404(Notes, id=note_id)
+            note.name = new_name.strip()
+            note.save()
+            return redirect(f'/viewnotes/{folder_name}/')
+        
+        elif deleted_note_id:
+            del_note = get_object_or_404(Notes, id=deleted_note_id)
+            del_note.delete()
+            return redirect(f'/viewnotes/{folder_name}/')
         
     return render(request, 'display_notes.html', {
         'notes': notes_match,
