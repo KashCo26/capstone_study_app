@@ -13,16 +13,21 @@ def study_notes(request):
         folder_name = request.POST.get('folder_name')
         folder_id = request.POST.get('folder_id')
         new_name = request.POST.get('new_folder_name')
+        deleted_folder_id = request.POST.get('deleted_folder')
         
         if folder_name:
             Folder.objects.create(name=folder_name.strip())
             return redirect('notes')
         
-        
         elif folder_id and new_name:
             folder = get_object_or_404(Folder, id=folder_id)
             folder.name = new_name.strip()
             folder.save()
+            return redirect('notes')
+        
+        elif deleted_folder_id:
+            del_folder = get_object_or_404(Folder, id=deleted_folder_id)
+            del_folder.delete()
             return redirect('notes')
         
     return render(request, 'notes.html', {'folders': folders})

@@ -184,7 +184,13 @@
 
             <div id="menu-{{ forloop.counter }}" class="folder-action-dropdown">
                 <a href="#" class="dropdown-item" onclick="openRenameModal(event, '{{ folder.id }}', '{{ folder.name|escapejs }}', '{{ forloop.counter }}'); return false;">Rename</a>
-                <a href="#" class="dropdown-item delete-option" onclick="alert('Delete clicked for {{ folder.name|escapejs }}'); return false;">Delete</a>
+                <form method="POST" onsubmit="return confirm('Are you sure you want to delete {{ folder.name|escapejs }}?');">
+                    {% csrf_token %}
+                    <input type="hidden" id="deleted_folder" name="deleted_folder" value="{{ folder.id }}">
+                    <button type="submit" class="dropdown-item-delete-option" style="border: none; width: 100%; height: 100%; text-align: left; padding: 0.25rem 0.8rem;">
+                        Delete
+                    </button>
+                </form>
             </div>
         </div>
     {% empty %}
@@ -390,6 +396,7 @@
         width: 110px;
         z-index: 10;
         overflow: hidden;
+        cursor: pointer;
     }
 
     .dropdown-item {
@@ -405,13 +412,15 @@
         background-color: #f5f5f5;
     }
 
-    .dropdown-item.delete-option {
+    .dropdown-item-delete-option {
         color: #e74c3c;
         border-top: 1px solid #eee;
+        cursor: pointer;
+        background: none;
     }
 
-    .dropdown-item.delete-option:hover {
-        background-color: #fdf2f2;
+    .dropdown-item-delete-option:hover {
+        background-color: #f5f5f5;
     }
 </style>
 
