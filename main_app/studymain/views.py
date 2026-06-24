@@ -15,18 +15,22 @@ def study_folders(request):
         
         if folder_name:
             Folder.objects.create(name=folder_name.strip())
-            return redirect('notes')
+            return redirect('folders')
         
         elif folder_id and new_name:
             folder = get_object_or_404(Folder, id=folder_id)
             folder.name = new_name.strip()
             folder.save()
-            return redirect('notes')
+            return redirect('folders')
         
         elif deleted_folder_id:
+            notes = Notes.objects.all()
+            for note in notes:
+                if note.folder == deleted_folder_id:
+                    note.delete()
             del_folder = get_object_or_404(Folder, id=deleted_folder_id)
             del_folder.delete()
-            return redirect('notes')
+            return redirect('folders')
         
     return render(request, 'folders.html', {'folders': folders})
 
@@ -41,7 +45,7 @@ def create_note(request):
             chosen_folder = Folder.objects.get(id=folder_id)
         if note_name and note_text and chosen_folder:
             Notes.objects.create(name=note_name, text=note_text, folder=chosen_folder)
-            return redirect('notes')
+            return redirect('folders')
     return render(request, 'newnote.html', {'folders': folders})
 
 def display_notes(request, folder_name):
