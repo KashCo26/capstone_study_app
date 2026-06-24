@@ -1,8 +1,13 @@
+
+{% extends 'base.html' %}
+{% block title %}{{searched_folder}} Notes - StudyApp{% endblock %}
+
+{% block content %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Folder Notes</title>
+    <title>{{searched_folder}} Notes</title>
 </head>
 <body>
 
@@ -65,7 +70,6 @@
 </div>
 
 <style>
-    /* Global Styles */
     body {
         margin: 0;
         padding: 0;
@@ -82,7 +86,6 @@
         box-sizing: border-box;
     }
 
-    /* Layout Header Alignment */
     .header-container {
         display: flex;
         justify-content: space-between;
@@ -103,7 +106,6 @@
         color: #607A66;
     }
 
-    /* Create Action Button */
     .create-card {
         padding: 12px 24px;
         background-color: #607A66;
@@ -126,14 +128,12 @@
         transform: translateY(1px);
     }
 
-    /* Grid Layout */
     .notes-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 24px;
     }
 
-    /* Individual Card Styles */
     .note-card {
         background: #ffffff;
         border-radius: 12px;
@@ -185,7 +185,6 @@
         width: 100%;
     }
 
-    /* Card Top Right Options Menu Button */
     .action-menu-btn {
         position: absolute;
         top: 16px;
@@ -425,3 +424,4 @@
     }
 </script>
 </body>
+{% endblock %}

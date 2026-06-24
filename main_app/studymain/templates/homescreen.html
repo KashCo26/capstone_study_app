@@ -1,43 +1,50 @@
 <!DOCTYPE html>
+{% extends 'base.html' %}
+{% block title %}Home - StudyApp{% endblock %}
+
+
+{% block content %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Study App Home</title>
-    <style>
-        .button-container {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 50px;
-        }
-        .btn {
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-blue { background-color: #3498db; }
-        .btn-green { background-color: #2ecc71; }
-        .btn-purple { background-color: #9b59b6; }
-        
-        .btn:hover { opacity: 0.9; }
-    </style>
 </head>
+
+<style>
+    .button-container {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 50px;
+    }
+    .btn {
+        padding: 15px 30px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-blue { background-color: #3498db; }
+    .btn-green { background-color: #2ecc71; }
+    .btn-purple { background-color: #9b59b6; }
+    
+    .btn:hover { opacity: 0.9; }
+</style>
+
+
 <body>
 
     <h1 style="text-align: center; margin-top: 40px;">Welcome to Your Study Dashboard</h1>
 
     <div class="button-container">
-        <a href="/notes/"><button class="btn btn-blue">View Folders</button></a>
+        <a href="/folders/"><button class="btn btn-blue">View Folders</button></a>
         
         <button class="btn btn-green">Flashcards</button>
         
         <button class="btn btn-purple">Start Quiz</button>
     </div>
-
 </body>
-</html>
+{% endblock %}

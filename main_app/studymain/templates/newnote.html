@@ -1,13 +1,18 @@
 <!DOCTYPE html>
+{% extends 'base.html' %}
+{% block title %}Create a Note - StudyApp{% endblock %}
+
+{% block content %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Create a Note</title>
 </head>
+
 <body>
     <h1>
-        <div class="notes-box">
-            <form method="POST">
+        <form method="POST">
+            <div class="notes-box" style="">
                 {% csrf_token %}
                 <input type="text" id="sample-input" class="modern-input" name="note_name" placeholder="Enter note name..." required>
                 <div id="folderPopup" class="popup-menu">
@@ -23,17 +28,15 @@
                 </div>
                 <br>
                 <textarea id="doc-box" name="note_text" class="underline-doc-box" placeholder="Start typing your study notes here..."></textarea>
-                <br>
-                <button type="submit" class="save-btn">Save</button>
-            </form>
-        <a href="/notes/"><button class="cancel-btn">Cancel</button>
-        <div class="input-container">
-       
-</div>
+            </div>
+            <button type="submit" class="save-btn">Save</button>
+            <a href="/folders/"><button class="cancel-btn">Cancel</button>
+        </form>
     </h1>
 
+
 <style>
-        .dropdown-style {
+    .dropdown-style {
         width: 80%;
         padding: 10px;
         font-size: 14px;
@@ -76,10 +79,7 @@
         box-shadow: 0 0 0 4px rgba(96, 122, 102, 0.15);
         outline: none; 
     }
-</style>
-
-<style>
-    /* Wrapper container for layout alignment */
+    
     .input-container {
         display: flex;
         flex-direction: column;
@@ -104,7 +104,6 @@
         transition: all 0.25s ease-in-out;
     }
 
-    /* Styling for document placeholder text */
     .underline-doc-box::placeholder {
         color: #ccc;
         font-style: normal;
@@ -168,3 +167,5 @@
         background-color: #f5faf7de;
     }
 </style>
+
+{% endblock %}

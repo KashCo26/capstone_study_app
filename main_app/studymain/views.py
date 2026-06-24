@@ -1,14 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
 from .models import Folder, Notes
-
-folders = Folder.objects.all()
 
 # Create your views here.
 def home_screen(request):
     return render(request, 'homescreen.html')
 
-def study_notes(request):
+def study_folders(request):
+    folders = Folder.objects.all()
     if request.method == 'POST':
         folder_name = request.POST.get('folder_name')
         folder_id = request.POST.get('folder_id')
@@ -30,9 +28,10 @@ def study_notes(request):
             del_folder.delete()
             return redirect('notes')
         
-    return render(request, 'notes.html', {'folders': folders})
+    return render(request, 'folders.html', {'folders': folders})
 
 def create_note(request):
+    folders = Folder.objects.all()
     if request.method == 'POST':
         note_name = request.POST.get('note_name')
         note_text = request.POST.get('note_text')

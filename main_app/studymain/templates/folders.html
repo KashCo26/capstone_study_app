@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+{% extends 'base.html' %}
+{% block title %}Folders - StudyApp{% endblock %}
+
+{% block content %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -20,13 +24,12 @@
 <style>
     .notes-wrapper {
         position: absolute;
-        top: 20px;
+        top: 80px;
         right: 20px;
         z-index: 1000;
         font-family: Verdana, sans-serif;
     }
 
-    /* Styles the circular plus button */
     .plus-btn {
         width: 45px;
         height: 45px;
@@ -251,7 +254,6 @@
         })
         .then(response => {
             if (response.ok) {
-                // Log the active index to make sure it's tracking correctly
                 console.log("Updating UI folder index:", activeLoopIndex);
                 
                 const textElement = document.getElementById(`folder-text-${activeLoopIndex}`);
@@ -340,7 +342,9 @@
 <style>
     .folder-wrapper {
         position: relative;
-        width: 150px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 24px;
     }
 
     .folder-btn {
@@ -425,3 +429,4 @@
 </style>
 
 </body>
+{% endblock %}
