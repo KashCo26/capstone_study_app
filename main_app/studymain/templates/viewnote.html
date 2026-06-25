@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 {% extends 'base.html' %}
-{% block title %}Create a Note - StudyApp{% endblock %}
+{% block title %}View Note - StudyApp{% endblock %}
 
 {% block content %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create a Note</title>
+    <title>View Note</title>
 </head>
 
 <body>
@@ -14,20 +14,20 @@
         <form method="POST">
             <div class="notes-box" style="">
                 {% csrf_token %}
-                <input type="text" id="sample-input" class="modern-input" name="note_name" placeholder="Enter note name..." required>
+                <input type="text" id="sample-input" class="modern-input" name="note_name" value={{searched_note}}>
                 <div id="folderPopup" class="popup-menu">
                     <select name="selected_folder" id="folder-select" class="dropdown-style">
-                    <option value="">Choose folder</option>
-                    
-                    {% for folder in folders %}
-                        <option value="{{ folder.id }}">{{ folder.name }}</option>
-                    {% empty %}
-                        <option value="" disabled>No folders available. Create one first!</option>
-                    {% endfor %}
+                        {% for folder in folders %}
+                            <option value="{{ folder.id }}" {% if folder.id == chosen_folder_id %}selected{% endif %}>
+                                {{ folder.name }}
+                            </option>
+                        {% empty %}
+                            <option value="" disabled>No folders available. Create one first!</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <br>
-                <textarea id="doc-box" name="note_text" class="underline-doc-box" placeholder="Start typing your study notes here..."></textarea>
+                <textarea id="doc-box" name="note_text" class="underline-doc-box">{{note_text}}</textarea>
             </div>
             <button type="submit" class="save-btn">Save</button>
             <a href="/folders/"><button class="cancel-btn">Cancel</button>

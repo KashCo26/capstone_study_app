@@ -25,13 +25,11 @@
         <div class="notes-container">
             {% for note in notes %}
                 <div class="note-card">
-                    <div class="note-content-click">
-                        <button style="background: none; outline: none; border: none;">
-                            <h3 id="folder-text-{{ forloop.counter }}">{{ note.name }}</h3>
-                            <p>{{ note.text|truncatechars:60 }}...</p> 
-                            <small>Created: {{ note.created_at|date:"m-d-Y" }}</small>
-                        </button>
-                    </div>
+                    <a href="{% url 'notecontent' note.name %}" style="text-decoration: none; color: inherit; display: block; width: 100%;">
+                        <h3 id="folder-text-{{ forloop.counter }}">{{ note.name }}</h3>
+                        <p>{{ note.text|truncatechars:20 }}</p> 
+                        <small>Created: {{ note.created_at|date:"m-d-Y" }}</small>
+                    </a>
                 
                     <button type="button" class="action-menu-btn" onclick="toggleFolderActionMenu(event, 'menu-{{ forloop.counter }}')">&#8942;</button>
 

@@ -76,3 +76,24 @@ def display_notes(request, folder_name):
         'notes': notes_match,
         'searched_folder': folder_name
     })
+    
+def show_note(request, note_name):
+    folders = Folder.objects.all()
+    note = get_object_or_404(Notes, name=note_name)
+    new_name = request.POST.get('note_name')
+    new_text = request.POST.get('note_text')
+    new_folder_id = request.POST.get('selected_folder')
+    
+    if new_name and new_text and new_folder_id:
+        note.name = new_name.strip()
+        note.text = new_text.strip()
+        note.folder = Folder.objects.get(id=new_folder_id)
+        note.save()
+        return redirect(f'/viewnotes/{note.folder}')
+    
+    return render(request, 'viewnote.html', {
+        'searched_note': note_name, 
+        'note_text': note.text,
+        'folders': folders,
+        'chosen_folder_id': note.folder.id,
+    })

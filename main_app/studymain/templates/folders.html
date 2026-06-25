@@ -181,7 +181,7 @@
         <div class="folder-wrapper"> 
             <button type="button" class="folder-btn" onclick="goToFolder('{{ folder.name|escapejs }}')" style="text-align: center;">
             📁<br>
-            <strong id="folder-text-{{ forloop.counter }}">{{ folder.name }}</strong></button>
+            <strong id="folder-text-{{ forloop.counter }}">{{ folder.name|truncatechars:10 }}</strong></button>
 
             <button type="button" class="action-menu-btn" onclick="toggleFolderActionMenu(event, 'menu-{{ forloop.counter }}')">&#8942;</button>
 
