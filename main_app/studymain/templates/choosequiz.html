@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+{% block title %}Home - StudyApp{% endblock %}
+
+
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Study App Home</title>
+</head>
+
+<body>
+
+    <h1 style="text-align: center; margin-top: 40px;">Quiz Selection</h1>
+    <h2 style="text-align: center; margin-top: 20px; font-size: 1.1rem">What would you like to be quizzed on?</h2>
+    <div class="box-container">
+        <div class="dropdown-wrapper">
+            <button class="btn folder-btn" onclick="togglePopup()">Choose Study</button>
+
+            <div id="folderPopup" class="popup-bubble">
+                <form method="GET">
+                    <select name="selected_folder" id="folder-select" class="dropdown-style" onchange="handleFolderSelect()">
+                        <option value="">Choose folder</option>
+                        {% for folder in folders %}
+                            <option value="{{ folder.id }}">{{ folder.name }}</option>
+                        {% empty %}
+                            <option value="" disabled>No folders available. Create one first!</option>
+                        {% endfor %}
+                    </select>
+                </form>
+
+                <div id="notesPopup" class="popup-bubble notes-bubble">
+                    <div class="notes-header">Choose notes</div>
+                    <div class="checkbox-list">
+                        {% if notes %}
+                            <label class="checkbox-item select-all-item">
+                                <input type="checkbox" id="select-all-notes" onchange="toggleSelectAll(this)">
+                                <span class="custom-checkbox"></span>
+                                <span class="note-name" style="font-weight: bold;">Select All</span>
+                            </label>
+                        {% endif %}
+
+                        {% for note in notes %}
+                            <label class="checkbox-item note-checkbox-item">
+                                <input type="checkbox" name="selected_notes" value="{{ note.id }}" onchange="handleNoteCheck()">
+                                <span class="custom-checkbox"></span>
+                                <span class="note-name">{{ note.name }}</span>
+                            </label>
+                        {% empty %}
+                            <div class="no-notes">No notes available for this folder.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <button class="btn time-btn">Study Time</button></a>
+        <button class="btn format-btn">Answer Format</button>
+        <button class="btn start-btn">Start</button>
+
+
+<style>
+    .box-container {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 30px;
+        align-items: flex-start;
+    }
+
+    .dropdown-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .btn {
+        padding: 15px 30px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .folder-btn { background-color: #3498db; }
+    .time-btn { background-color: #2ecc71; }
+    .format-btn { background-color: #9b59b6; }
+    .start-btn { background-color: #e68a00; }
+    
+    .btn:hover { opacity: 0.9; }
+
+    .popup-bubble {
+        display: none;
+        position: absolute;
+        background-color: #ffffff;
+        padding: 12px;
+        border-radius: 12px;
+        box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e0e0e0;
+        z-index: 100;
+        min-width: 180px;
+    }
+
+    .folder-bubble {
+        top: 120%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .notes-bubble {
+        top: 0;
+        left: 105%; 
+        transform: none; 
+        max-height: 220px;
+        overflow-y: auto;
+    }
+
+    .notes-header {
+        font-size: 13px;
+        font-weight: bold;
+        color: #777;
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .checkbox-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        user-select: none;
+    }
+
+    .checkbox-item:hover {
+        background-color: #f7f9fa;
+    }
+
+    /* Separation border line underneath the Select All block */
+    .select-all-item {
+        padding-bottom: 8px;
+        border-bottom: 1px dashed #ddd;
+        margin-bottom: 4px;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        display: none;
+    }
+
+    .custom-checkbox {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #bdc3c7;
+        border-radius: 4px;
+        display: inline-block;
+        position: relative;
+        transition: all 0.15s ease;
+    }
+
+    .checkbox-item input[type="checkbox"]:checked + .custom-checkbox {
+        background-color: #3498db;
+        border-color: #3498db;
+    }
+
+    .checkbox-item input[type="checkbox"]:checked + .custom-checkbox::after {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 1px;
+        width: 4px;
+        height: 8px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .note-name {
+        font-size: 14px;
+        color: #333;
+    }
+
+    .no-notes {
+        font-size: 13px;
+        color: #95a5a6;
+        font-style: italic;
+    }
+
+    .folder-bubble::before, .folder-bubble::after {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-style: solid;
+    }
+    .folder-bubble::before { border-width: 8px; border-color: transparent transparent #ffffff transparent; z-index: 2; }
+    .folder-bubble::after { border-width: 9px; border-color: transparent transparent #e0e0e0 transparent; z-index: 1; }
+
+    .notes-bubble::before, .notes-bubble::after {
+        content: "";
+        position: absolute;
+        right: 100%;
+        top: 20px;
+        border-style: solid;
+        transform: none;
+    }
+    .notes-bubble::before { border-width: 8px; border-color: transparent #ffffff transparent transparent; z-index: 2; }
+    .notes-bubble::after { border-width: 9px; border-color: transparent #e0e0e0 transparent transparent; z-index: 1; }
+
+    .dropdown-style {
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        width: 100%;
+        font-size: 14px;
+        outline: none;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedFolder = urlParams.get('selected_folder');
+        
+        if (selectedFolder) {
+            document.getElementById("folderPopup").style.display = "block";
+            document.getElementById("notesPopup").style.display = "block";
+            document.getElementById("folder-select").value = selectedFolder;
+        }
+    });
+    
+    function togglePopup(event) {
+        if (event) event.stopPropagation();
+        var popup = document.getElementById("folderPopup");
+        var notesPopup = document.getElementById("notesPopup");
+        if (popup.style.display === "block") {
+            popup.style.display = "none";
+            notesPopup.style.display = "none";
+        } else {
+            popup.style.display = "block";
+        }
+    }
+    
+    function handleFolderSelect() {
+        var folderSelect = document.getElementById("folder-select");
+        var selectedValue = folderSelect.value;
+
+        if (selectedValue !== "") {
+            window.location.search = `?selected_folder=${selectedValue}`;
+        } else {
+            window.location.search = '';
+        }
+    }
+
+    // ADDED: Logic to select or deselect all items simultaneously
+    function toggleSelectAll(masterCheckbox) {
+        const noteCheckboxes = document.querySelectorAll('input[name="selected_notes"]');
+        noteCheckboxes.forEach(checkbox => {
+            checkbox.checked = masterCheckbox.checked;
+        });
+    }
+
+    // ADDED: Logic to uncheck "Select All" if a user manually unchecks an individual item
+    function handleNoteCheck() {
+        const masterCheckbox = document.getElementById('select-all-notes');
+        const noteCheckboxes = document.querySelectorAll('input[name="selected_notes"]');
+        
+        // Converts NodeList to Array to evaluate if every checkbox is checked
+        const allChecked = Array.from(noteCheckboxes).every(checkbox => checkbox.checked);
+        if (masterCheckbox) {
+            masterCheckbox.checked = allChecked;
+        }
+    }
+
+    window.addEventListener('click', function(e) {
+        var folderPopup = document.getElementById("folderPopup");
+        var folderBtn = document.querySelector(".folder-btn");
+        if (folderPopup && !folderPopup.contains(e.target) && e.target !== folderBtn) {
+            folderPopup.style.display = "none";
+            document.getElementById("notesPopup").style.display = "none";
+        }
+    });
+</script>
+
+
+{% endblock %}

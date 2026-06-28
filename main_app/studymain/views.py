@@ -96,4 +96,20 @@ def show_note(request, note_name):
         'note_text': note.text,
         'folders': folders,
         'chosen_folder_id': note.folder.id,
+        'chosen_folder_name': note.folder.name
+    })
+    
+def quiz_options(request):
+    folders = Folder.objects.all()
+    notes = None
+    folder_id = request.GET.get('selected_folder')
+    
+    if folder_id:
+        notes = Notes.objects.filter(folder_id=folder_id)
+    else:
+        notes = Notes.objects.all()
+    
+    return render(request, 'choosequiz.html', {
+        'folders': folders,
+        'notes': notes,
     })
