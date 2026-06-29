@@ -19,8 +19,9 @@
 
             <div id="folderPopup" class="popup-bubble">
                 <form method="GET">
+                    <div class="format-header">Choose folder</div>
                     <select name="selected_folder" id="folder-select" class="dropdown-style" onchange="handleFolderSelect()">
-                        <option value="">Choose folder</option>
+                        <option value="">--</option>
                         {% for folder in folders %}
                             <option value="{{ folder.id }}">{{ folder.name }}</option>
                         {% empty %}
@@ -58,7 +59,20 @@
         <div class="text-bubble" id="textbubble">
             <input type="text" class="text-bubbles"name="time-chosen" id="study-time-chosen" placeholder="Enter study time..." required>
         </div>
-        <button class="btn format-btn">Answer Format</button>
+        <button class="btn format-btn" onclick="toggleFormat()">Answer Format</button>
+        <div id="formatPopup" class="format-bubble">
+            <div class="format-header">Choose format</div>
+                <div class="format-list">
+                    <select name="selected_format" id="format-select" class="dropdown-style">
+                        <option value="">--</option>
+                        <option value="all">Select all</option>
+                        <option value="true-false">True/False</option>
+                        <option value="mcq">Multiple Choice</option>
+                        <option value="allthatapply">Multi-select</option>
+                        <option value="written">Written Response</option>
+                    </select>
+                </div>
+            </div>
         <button class="btn start-btn">Start</button>
 
 
@@ -119,6 +133,21 @@
         overflow-y: auto;
     }
 
+    .format-bubble {
+        display: none;
+        position: absolute;
+        background-color: #ffffff;
+        padding: 12px;
+        border-radius: 12px;
+        box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e0e0e0;
+        z-index: 100;
+        width: 190px;
+        top: 53%;
+        left: 60.5%;
+        transform: translateX(-50%);
+    }
+
     .text-bubble {
         display: none;
         position: absolute;
@@ -160,6 +189,15 @@
         border-bottom: 1px solid #eee;
     }
 
+    .format-header {
+        font-size: 13px;
+        font-weight: bold;
+        color: #777;
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #eee;
+    }
+
     .checkbox-list {
         display: flex;
         flex-direction: column;
@@ -178,6 +216,12 @@
 
     .checkbox-item:hover {
         background-color: #f7f9fa;
+    }
+
+    .format-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
     }
 
     .select-all-item {
@@ -218,6 +262,11 @@
     }
 
     .note-name {
+        font-size: 14px;
+        color: #333;
+    }
+
+    .format-name {
         font-size: 14px;
         color: #333;
     }
@@ -285,6 +334,16 @@
         }
     }
 
+    function toggleFormat(event) {
+        if (event) event.stopPropagation();
+        var format = document.getElementById("formatPopup");
+        if (format.style.display === "block") {
+            format.style.display = "none";
+        } else {
+            format.style.display = "block";
+        }
+    }
+
     function toggleText(event) {
         if (event) event.stopPropagation();
         var text = document.getElementById("textbubble");
@@ -313,6 +372,13 @@
         });
     }
 
+    function toggleSelectAllFormat(masterCheckbox) {
+        const noteCheckboxes = document.querySelectorAll('input[name="selected_format"]');
+        noteCheckboxes.forEach(checkbox => {
+            checkbox.checked = masterCheckbox.checked;
+        });
+    }
+
     function handleNoteCheck() {
         const masterCheckbox = document.getElementById('select-all-notes');
         const noteCheckboxes = document.querySelectorAll('input[name="selected_notes"]');
@@ -324,19 +390,21 @@
     }
 
     window.addEventListener('click', function(e) {
+        var textPopup = document.getElementById("textbubble");
+        var timeBtn = document.querySelector(".time-btn");
+        if (textPopup && !textPopup.contains(e.target) && e.target !== timeBtn) {
+            textPopup.style.display = "none";
+        }
+        var formatPopup = document.getElementById("formatPopup");
+        var formatBtn = document.querySelector(".format-btn");
+        if (formatPopup && !formatPopup.contains(e.target) && e.target !== formatBtn) {
+            formatPopup.style.display = "none";
+        }
         var folderPopup = document.getElementById("folderPopup");
         var folderBtn = document.querySelector(".folder-btn");
         if (folderPopup && !folderPopup.contains(e.target) && e.target !== folderBtn) {
             folderPopup.style.display = "none";
             document.getElementById("notesPopup").style.display = "none";
-        }
-    });
-
-    window.addEventListener('click', function(e) {
-        var text = document.getElementById("textbubble");
-        var timeBtn = document.querySelector(".time-btn");
-        if (text && !text.contains(e.target) && e.target !== timeBtn) {
-            text.style.display = "none";
         }
     });
 </script>
