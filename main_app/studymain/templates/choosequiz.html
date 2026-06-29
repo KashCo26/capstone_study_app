@@ -54,9 +54,10 @@
             </div>
         </div>
 
-
-
-        <button class="btn time-btn">Study Time</button></a>
+        <button class="btn time-btn" onclick="toggleText()">Study Time</button></a>
+        <div class="text-bubble" id="textbubble">
+            <input type="text" class="text-bubbles"name="time-chosen" id="study-time-chosen" placeholder="Enter study time..." required>
+        </div>
         <button class="btn format-btn">Answer Format</button>
         <button class="btn start-btn">Start</button>
 
@@ -118,6 +119,38 @@
         overflow-y: auto;
     }
 
+    .text-bubble {
+        display: none;
+        position: absolute;
+        background-color: #ffffff;
+        padding: 12px;
+        border-radius: 12px;
+        box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e0e0e0;
+        z-index: 100;
+        max-width: 160px;
+        top: 53%;
+        left: 44.5%;
+        transform: translateX(-50%);
+    }
+
+    .text-bubbles {
+        max-width: 140px;
+    }
+
+    .text-bubbles::placeholder {
+        color: #aaa;
+        font-style: italic;
+        font-size: 15px;
+    }
+
+    .text-bubbles:focus {
+        border-color: #607A66;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 4px rgba(96, 122, 102, 0.15);
+        outline: none; 
+    }
+
     .notes-header {
         font-size: 13px;
         font-weight: bold;
@@ -147,7 +180,6 @@
         background-color: #f7f9fa;
     }
 
-    /* Separation border line underneath the Select All block */
     .select-all-item {
         padding-bottom: 8px;
         border-bottom: 1px dashed #ddd;
@@ -252,6 +284,16 @@
             popup.style.display = "block";
         }
     }
+
+    function toggleText(event) {
+        if (event) event.stopPropagation();
+        var text = document.getElementById("textbubble");
+        if (text.style.display === "block") {
+            text.style.display = "none";
+        } else {
+            text.style.display = "block";
+        }
+    }
     
     function handleFolderSelect() {
         var folderSelect = document.getElementById("folder-select");
@@ -264,7 +306,6 @@
         }
     }
 
-    // ADDED: Logic to select or deselect all items simultaneously
     function toggleSelectAll(masterCheckbox) {
         const noteCheckboxes = document.querySelectorAll('input[name="selected_notes"]');
         noteCheckboxes.forEach(checkbox => {
@@ -272,12 +313,10 @@
         });
     }
 
-    // ADDED: Logic to uncheck "Select All" if a user manually unchecks an individual item
     function handleNoteCheck() {
         const masterCheckbox = document.getElementById('select-all-notes');
         const noteCheckboxes = document.querySelectorAll('input[name="selected_notes"]');
         
-        // Converts NodeList to Array to evaluate if every checkbox is checked
         const allChecked = Array.from(noteCheckboxes).every(checkbox => checkbox.checked);
         if (masterCheckbox) {
             masterCheckbox.checked = allChecked;
@@ -290,6 +329,14 @@
         if (folderPopup && !folderPopup.contains(e.target) && e.target !== folderBtn) {
             folderPopup.style.display = "none";
             document.getElementById("notesPopup").style.display = "none";
+        }
+    });
+
+    window.addEventListener('click', function(e) {
+        var text = document.getElementById("textbubble");
+        var timeBtn = document.querySelector(".time-btn");
+        if (text && !text.contains(e.target) && e.target !== timeBtn) {
+            text.style.display = "none";
         }
     });
 </script>
