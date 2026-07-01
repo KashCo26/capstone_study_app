@@ -35,8 +35,6 @@
                 </select>
             </div>
         </div>
-
-        <div class="text-sm text-gray-400 font-medium">Draft Mode</div>
     </header>
 
     <div class="flex-1 flex overflow-hidden">
@@ -70,18 +68,20 @@
 
                 <div id="flashcardContainer" class="space-y-4">
                     <div class="card-item bg-white border border-gray-200 rounded-2xl p-6 shadow-sm transition-all duration-200 hover:border-gray-300 relative group flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
-                        <span class="absolute top-4 left-4 text-xs font-bold text-gray-400 uppercase tracking-wider card-number">Card 1</span>
+                        <span class="absolute top-4 left-6 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest card-number">
+                            Card 1
+                        </span>
                         
-                        <div class="flex-1 pt-4 md:pt-0">
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Question</label>
+                        <div class="flex-1 pt-6">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Question</label>
                             <textarea name="question[]" rows="3" placeholder="Enter question or prompt..." required
-                                class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none bg-gray-50 focus:bg-white transition"></textarea>
+                                class="w-full p-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:border-[#607A66] focus:ring-4 focus:ring-[#607A66]/5 transition-all duration-200 resize-none"></textarea>
                         </div>
                         
-                        <div class="flex-1">
-                            <label class="block text-xs font-semibold text-gray-500 mb-1">Answer</label>
+                        <div class="flex-1 pt-0 md:pt-6">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Answer</label>
                             <textarea name="answer[]" rows="3" placeholder="Enter definitive answer..." required
-                                class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none bg-gray-50 focus:bg-white transition"></textarea>
+                                class="w-full p-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:border-[#607A66] focus:ring-4 focus:ring-[#607A66]/5 transition-all duration-200 resize-none"></textarea>
                         </div>
                     </div>
                 </div>
@@ -162,17 +162,18 @@
         addBtn.addEventListener('click', () => {
             const newCard = document.createElement('div');
             newCard.className = "card-item bg-white border border-gray-200 rounded-2xl p-6 shadow-sm transition-all duration-200 hover:border-gray-300 relative flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 opacity-0 transform translate-y-2";
+            // Updated dynamic string snippet to retain the clear layout margins
             newCard.innerHTML = `
-                <span class="absolute top-4 left-4 text-xs font-bold text-gray-400 uppercase tracking-wider card-number">Card</span>
-                <div class="flex-1 pt-4 md:pt-0">
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">Question</label>
+                <span class="absolute top-4 left-6 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest card-number">Card</span>
+                <div class="flex-1 pt-6">
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Question</label>
                     <textarea name="question[]" rows="3" placeholder="Enter question or prompt..." required
-                        class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none bg-gray-50 focus:bg-white transition"></textarea>
+                        class="w-full p-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:border-[#607A66] focus:ring-4 focus:ring-[#607A66]/5 transition-all duration-200 resize-none"></textarea>
                 </div>
-                <div class="flex-1">
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">Answer</label>
+                <div class="flex-1 pt-0 md:pt-6">
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Answer</label>
                     <textarea name="answer[]" rows="3" placeholder="Enter definitive answer..." required
-                        class="w-full p-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none bg-gray-50 focus:bg-white transition"></textarea>
+                        class="w-full p-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:border-[#607A66] focus:ring-4 focus:ring-[#607A66]/5 transition-all duration-200 resize-none"></textarea>
                 </div>
             `;
             

@@ -17,51 +17,49 @@
         </a>
     </div>
 
-    <form method="GET">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {% for note in notes %}
-                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm relative flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group">
-                    
-                    <a href="{% url 'notecontent' note.name %}" class="block w-full flex-1 text-left">
-                        <h3 id="folder-text-{{ forloop.counter }}" class="text-lg font-bold text-gray-900 mb-2 pr-6 break-words line-clamp-1">
-                            {{ note.name }}
-                        </h3>
-                        <p class="text-sm text-gray-650 leading-relaxed mb-5">
-                            {{ note.text|truncatechars:20 }}
-                        </p> 
-                        <small class="block text-xs font-medium text-gray-400 border-t border-gray-100 pt-3 mt-auto">
-                            Created: {{ note.created_at|date:"m-d-Y" }}
-                        </small>
-                    </a>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for note in notes %}
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm relative flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group">
                 
-                    <button type="button" onclick="toggleFolderActionMenu(event, 'menu-{{ forloop.counter }}')" 
-                        class="action-menu-btn absolute top-4 right-4 text-xl font-bold text-gray-400 hover:text-gray-900 hover:bg-gray-100 px-2 py-0.5 rounded-lg transition duration-200 z-10">
-                        &#8942;
-                    </button>
+                <a href="{% url 'notecontent' note.name %}" class="block w-full flex-1 text-left">
+                    <h3 id="folder-text-{{ forloop.counter }}" class="text-lg font-bold text-gray-900 mb-2 pr-6 break-words line-clamp-1">
+                        {{ note.name }}
+                    </h3>
+                    <p class="text-sm text-gray-650 leading-relaxed mb-5">
+                        {{ note.text|truncatechars:20 }}
+                    </p> 
+                    <small class="block text-xs font-medium text-gray-400 border-t border-gray-100 pt-3 mt-auto">
+                        Created: {{ note.created_at|date:"m-d-Y" }}
+                    </small>
+                </a>
+            
+                <button type="button" onclick="toggleFolderActionMenu(event, 'menu-{{ forloop.counter }}')" 
+                    class="action-menu-btn absolute top-4 right-4 text-xl font-bold text-gray-400 hover:text-gray-900 hover:bg-gray-100 px-2 py-0.5 rounded-lg transition duration-200 z-10">
+                    &#8942;
+                </button>
 
-                    <div id="menu-{{ forloop.counter }}" class="note-action-dropdown hidden absolute top-12 right-4 bg-white border border-gray-200 rounded-xl shadow-xl w-32 z-20 overflow-hidden animate-fade-in">
-                        <a href="#" onclick="openRenameModal(event, '{{ note.id }}', '{{ note.name|escapejs }}', '{{ forloop.counter }}'); return false;"
-                            class="block w-full text-left px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition">
-                            Rename
-                        </a>
-                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete {{ note.name|escapejs }}?');" class="m-0">
-                            {% csrf_token %}
-                            <input type="hidden" id="deleted_note" name="deleted_note" value="{{ note.id }}">
-                            <button type="submit" class="block w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 border-t border-gray-100 transition">
-                                Delete
-                            </button>
-                        </form>
-                    </div>
+                <div id="menu-{{ forloop.counter }}" class="note-action-dropdown hidden absolute top-12 right-4 bg-white border border-gray-200 rounded-xl shadow-xl w-32 z-20 overflow-hidden animate-fade-in">
+                    <a href="#" onclick="openRenameModal(event, '{{ note.id }}', '{{ note.name|escapejs }}', '{{ forloop.counter }}'); return false;"
+                        class="block w-full text-left px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition">
+                        Rename
+                    </a>
+                    <form method="POST" onsubmit="return confirm('Are you sure you want to delete {{ note.name|escapejs }}?');" class="m-0">
+                        {% csrf_token %}
+                        <input type="hidden" id="deleted_note" name="deleted_note" value="{{ note.id }}">
+                        <button type="submit" class="block w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 border-t border-gray-100 transition">
+                            Delete
+                        </button>
+                    </form>
+                </div>
 
-                </div>
-            {% empty %}
-                <div class="col-span-full text-center py-16 px-4 bg-white border-2 border-dashed border-gray-200 rounded-2xl">
-                    <i class="fa-solid fa-note-sticky text-4xl text-gray-200 mb-3 block"></i>
-                    <p class="text-sm font-medium text-gray-500">No notes found for this folder.</p>
-                </div>
-            {% endfor %}
-        </div>
-    </form>
+            </div>
+        {% empty %}
+            <div class="col-span-full text-center py-16 px-4 bg-white border-2 border-dashed border-gray-200 rounded-2xl">
+                <i class="fa-solid fa-note-sticky text-4xl text-gray-200 mb-3 block"></i>
+                <p class="text-sm font-medium text-gray-500">No notes found for this folder.</p>
+            </div>
+        {% endfor %}
+    </div>
 </div>
 
 <div id="renameNoteModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
@@ -101,7 +99,7 @@
     }
 
     function closeRenameModal() {
-        document.getElementById("renameNoteModal").classAdd("hidden");
+        document.getElementById("renameNoteModal").classList.add("hidden");
     }
     
     function submitRename(event) {
@@ -140,7 +138,6 @@
         targetMenu.classList.toggle("hidden");
     }
 
-    // Dismiss active flyouts clicking outer document nodes
     window.onclick = function(event) {
         if (!event.target.matches('.action-menu-btn')) {
             const dropdowns = document.getElementsByClassName("note-action-dropdown");
