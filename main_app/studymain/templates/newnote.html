@@ -4,12 +4,17 @@
 {% block content %}
 <div class="max-w-4xl mx-auto py-8 px-4 font-sans min-h-screen relative pb-24">
 
+    <div id="validationNotification" class="hidden fixed top-6 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-sm font-bold px-6 py-3.5 rounded-xl shadow-xl z-[9999] flex items-center space-x-2 transition-all duration-300">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="notificationMessage">Please fill out all required fields before saving.</span>
+    </div>
+
     <div class="mb-8">
         <h1 class="text-2xl font-black text-gray-900 tracking-tight">Create New Note</h1>
         <p class="text-sm text-gray-500 mt-1">Draft your thoughts, organize concepts, and prepare for your next study session.</p>
     </div>
 
-    <form method="POST" class="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-8">
+    <form id="noteForm" method="POST" class="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-8" novalidate>
         {% csrf_token %}
         
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-gray-100">
@@ -29,6 +34,7 @@
                 <label for="folder-select" class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Assign Folder</label>
                 <select name="selected_folder" 
                         id="folder-select" 
+                        required
                         class="w-full p-3 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 cursor-pointer transition focus:outline-none focus:border-gray-400 focus:ring-4 focus:ring-gray-100"
                 >
                     <option value="">-- Choose Folder --</option>
@@ -46,6 +52,7 @@
             <textarea id="doc-box" 
                       name="note_text" 
                       placeholder="Start typing your study notes here..."
+                      required
                       class="w-full h-96 p-4 text-sm font-medium text-gray-700 bg-gray-50/50 border border-gray-200 rounded-xl resize-y leading-relaxed transition-all duration-200 focus:bg-white focus:border-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-50 placeholder-gray-300"
             ></textarea>
         </div>
@@ -64,4 +71,25 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.getElementById('noteForm').addEventListener('submit', function(event) {
+        const title = document.getElementById('sample-input').value.trim();
+        const folder = document.getElementById('folder-select').value;
+        const content = document.getElementById('doc-box').value.trim();
+        
+        // Validation check for empty attributes
+        if (!title || !folder || !content) {
+            event.preventDefault(); // Stop standard form processing layout
+            
+            const banner = document.getElementById('validationNotification');
+            banner.classList.remove('hidden');
+            
+            // Auto hide notification banner after 4 seconds smoothly
+            setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 4000);
+        }
+    });
+</script>
 {% endblock %}

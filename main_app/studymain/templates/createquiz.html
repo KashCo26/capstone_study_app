@@ -25,13 +25,16 @@
                 <p class="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Select Source Material</p>
                 <select class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
                     <option value="">Choose a folder or file...</option>
-                    <optgroup label="Biology">
-                        <option value="1">Chapter 1: Cells</option>
-                        <option value="2">Chapter 2: Genetics</option>
-                    </optgroup>
-                    <optgroup label="History">
-                        <option value="3">WWII Summary</option>
-                    </optgroup>
+                    {% for folder in folders %}
+                        <optgroup name="folder_label" label="{{ folder.name }}" id="{{ folder.id }}">
+                            {% for note in folder.notes_set.all %}
+                                <option value="{{ note.id }}">{{ note.name }}</option>
+                            {% empty %}
+                                <option value="" disabled>No notes available.</option>
+                            {% endfor %}
+                    {% empty %}
+                        <option value="" disabled>No subject folders available.</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>

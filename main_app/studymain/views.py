@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Folder, Notes
+from .models import Folder, Notes, Flashcard, StudySet
 
 # Create your views here.
 def home_screen(request):
@@ -113,5 +113,44 @@ def quiz_options(request):
         'folders': folders,
         'notes': notes,
     })
+
 def new_quiz(request):
-    return render(request, 'createquiz.html')
+    folders = Folder.objects.all()
+    notes = None
+    folder_id = request.GET.get('folder_label')
+    
+    if folder_id:
+        notes = Notes.objects.filter(folder_id=folder_id)
+    else:
+        notes = Notes.objects.all()
+        
+    set_name = request.POST.get('set_name') # Shared Name
+    questions = request.POST.getlist('question[]')
+    answers = request.POST.getlist('answer[]')
+    
+    if set_name and questions and answers:    
+        study_set = StudySet.objects.create(
+                name=set_name.strip()
+                # folder=some_folder_object (optional: link to a folder if selected)
+            )
+            
+        flashcards_to_create = []
+        for q_text, a_text in zip(questions, answers):
+            if q_text.strip() and a_text.strip():
+                flashcards_to_create.append(
+                    Flashcard(
+                        study_set=study_set,
+                        front=q_text.strip(),
+                        back=a_text.strip()
+                    )
+                )
+            
+        if flashcards_to_create:
+            Flashcard.objects.bulk_create(flashcards_to_create)
+                
+            return redirect('folders')
+    
+    return render(request, 'createquiz.html', {
+        'folders': folders,
+        'notes': notes,
+    })
