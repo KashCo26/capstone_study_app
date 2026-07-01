@@ -1,425 +1,153 @@
-
 {% extends 'base.html' %}
 {% block title %}{{searched_folder}} Notes - StudyApp{% endblock %}
 
 {% block content %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{searched_folder}} Notes</title>
-</head>
-<body>
-
-<div class="page-wrapper">
-    <div class="header-container"> 
-        <div class="heading"> 
-            <h1>Notes inside folder: <span class="folder-highlight">{{ searched_folder }}</span></h1>
+<div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 font-sans min-h-screen">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4"> 
+        <div> 
+            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">
+                Notes inside folder: <span class="text-[#607A66]">{{ searched_folder }}</span>
+            </h1>
         </div>
-        <a href="/newnote/" class="create-link">
-            <button type="button" class="create-card">+ Create a note</button>
+        <a href="{% url 'newnote' %}" class="inline-block">
+            <button type="button" class="px-6 py-3 bg-[#607A66] hover:bg-[#4d6352] text-white font-semibold text-sm rounded-xl shadow-md shadow-[#607A66]/20 transition transform active:scale-95 duration-100">
+                + Create a note
+            </button>
         </a>
     </div>
 
     <form method="GET">
-        <div class="notes-container">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {% for note in notes %}
-                <div class="note-card">
-                    <a href="{% url 'notecontent' note.name %}" style="text-decoration: none; color: inherit; display: block; width: 100%;">
-                        <h3 id="folder-text-{{ forloop.counter }}">{{ note.name }}</h3>
-                        <p>{{ note.text|truncatechars:20 }}</p> 
-                        <small>Created: {{ note.created_at|date:"m-d-Y" }}</small>
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm relative flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group">
+                    
+                    <a href="{% url 'notecontent' note.name %}" class="block w-full flex-1 text-left">
+                        <h3 id="folder-text-{{ forloop.counter }}" class="text-lg font-bold text-gray-900 mb-2 pr-6 break-words line-clamp-1">
+                            {{ note.name }}
+                        </h3>
+                        <p class="text-sm text-gray-650 leading-relaxed mb-5">
+                            {{ note.text|truncatechars:20 }}
+                        </p> 
+                        <small class="block text-xs font-medium text-gray-400 border-t border-gray-100 pt-3 mt-auto">
+                            Created: {{ note.created_at|date:"m-d-Y" }}
+                        </small>
                     </a>
                 
-                    <button type="button" class="action-menu-btn" onclick="toggleFolderActionMenu(event, 'menu-{{ forloop.counter }}')">&#8942;</button>
+                    <button type="button" onclick="toggleFolderActionMenu(event, 'menu-{{ forloop.counter }}')" 
+                        class="action-menu-btn absolute top-4 right-4 text-xl font-bold text-gray-400 hover:text-gray-900 hover:bg-gray-100 px-2 py-0.5 rounded-lg transition duration-200 z-10">
+                        &#8942;
+                    </button>
 
-                    <div id="menu-{{ forloop.counter }}" class="note-action-dropdown">
-                        <a href="#" class="dropdown-item" onclick="openRenameModal(event, '{{ note.id }}', '{{ note.name|escapejs }}', '{{ forloop.counter }}'); return false;">Rename</a>
-                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete {{ note.name|escapejs }}?');" style="margin: 0;">
+                    <div id="menu-{{ forloop.counter }}" class="note-action-dropdown hidden absolute top-12 right-4 bg-white border border-gray-200 rounded-xl shadow-xl w-32 z-20 overflow-hidden animate-fade-in">
+                        <a href="#" onclick="openRenameModal(event, '{{ note.id }}', '{{ note.name|escapejs }}', '{{ forloop.counter }}'); return false;"
+                            class="block w-full text-left px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition">
+                            Rename
+                        </a>
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete {{ note.name|escapejs }}?');" class="m-0">
                             {% csrf_token %}
                             <input type="hidden" id="deleted_note" name="deleted_note" value="{{ note.id }}">
-                            <button type="submit" class="dropdown-item delete-option">
+                            <button type="submit" class="block w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 border-t border-gray-100 transition">
                                 Delete
                             </button>
                         </form>
                     </div>
+
                 </div>
             {% empty %}
-                <div class="empty-state">
-                    <p class="empty-message">No notes found for this folder.</p>
+                <div class="col-span-full text-center py-16 px-4 bg-white border-2 border-dashed border-gray-200 rounded-2xl">
+                    <i class="fa-solid fa-note-sticky text-4xl text-gray-200 mb-3 block"></i>
+                    <p class="text-sm font-medium text-gray-500">No notes found for this folder.</p>
                 </div>
             {% endfor %}
         </div>
     </form>
 </div>
 
-<div id="renameNoteModal" class="modal-overlay">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeRenameModal()">&times;</span>
-        <h3>Rename Note</h3>
+<div id="renameNoteModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm relative text-center transform transition-all">
+        <span onclick="closeRenameModal()" class="absolute top-4 right-5 text-2xl font-bold text-gray-400 hover:text-gray-600 cursor-pointer transition">
+            &times;
+        </span>
+        <h3 class="text-xl font-extrabold text-gray-900 mb-4">Rename Note</h3>
                     
         <form id="renameNoteForm" onsubmit="submitRename(event)" method="POST" action="">
             {% csrf_token %}
             <input type="hidden" id="renameNoteId" name="note_id">
-            <input type="text" id="renameInput" name="new_note_name" placeholder="Enter new note name..." required class="modal-input">
-            <button type="submit" class="modal-submit-btn">Save Changes</button>
+            <input type="text" id="renameInput" name="new_note_name" placeholder="Enter new note name..." required 
+                class="w-full p-3 mb-5 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-[#607A66] focus:ring-4 focus:ring-[#607A66]/10 transition">
+            <button type="submit" class="w-full bg-[#607A66] hover:bg-[#4d6352] text-white font-bold p-3 rounded-xl text-sm transition shadow-md shadow-[#607A66]/10">
+                Save Changes
+            </button>
         </form>
     </div>
 </div>
 
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background-color: #f8fafc;
-        color: #1e293b;
-    }
-
-    .page-wrapper {
-        min-height: 100vh;
-        padding: 40px 20px;
-        max-width: 1200px;
-        margin: 0 auto;
-        box-sizing: border-box;
-    }
-
-    .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 32px;
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-
-    .heading h1 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #0f172a;
-        margin: 0;
-    }
-
-    .folder-highlight {
-        color: #607A66;
-    }
-
-    .create-card {
-        padding: 12px 24px;
-        background-color: #607A66;
-        color: #ffffff;
-        border: none;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(96, 122, 102, 0.2);
-        transition: background-color 0.2s, transform 0.1s;
-    }
-
-    .create-card:hover {
-        background-color: #4d6352;
-        transform: translateY(-1px);
-    }
-
-    .create-card:active {
-        transform: translateY(1px);
-    }
-
-    .notes-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 24px;
-    }
-
-    .note-card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        border: 1px solid #e2e8f0;
-        position: relative; /* Context for absolute dropdowns */
-        display: flex;
-        flex-direction: column;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .note-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    .note-content-click {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        width: 100%;
-        text-align: left;
-        cursor: pointer;
-    }
-
-    .note-card h3 {
-        margin: 0 0 10px 0;
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #0f172a;
-        padding-right: 20px; /* Leave space for ellipsis button */
-    }
-
-    .note-card p {
-        margin: 0 0 20px 0;
-        color: #475569;
-        font-size: 0.95rem;
-        line-height: 1.6;
-        flex-grow: 1;
-    }
-
-    .note-card small {
-        display: block;
-        color: #94a3b8;
-        font-size: 0.8rem;
-        border-top: 1px solid #f1f5f9;
-        padding-top: 12px;
-        width: 100%;
-    }
-
-    .action-menu-btn {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: none;
-        border: none;
-        font-size: 20px;
-        font-weight: bold;
-        color: #94a3b8;
-        cursor: pointer;
-        padding: 4px 8px;
-        line-height: 1;
-        border-radius: 6px;
-        z-index: 5;
-        transition: background-color 0.2s, color 0.2s;
-    }
-
-    .action-menu-btn:hover {
-        background-color: #f1f5f9;
-        color: #1e293b;
-    }
-
-    .note-action-dropdown {
-        display: none;
-        position: absolute;
-        top: 45px;
-        right: 16px;
-        background-color: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        width: 120px;
-        z-index: 10;
-        overflow: hidden;
-    }
-
-    .dropdown-item {
-        display: block;
-        width: 100%;
-        padding: 10px 16px;
-        font-size: 0.9rem;
-        color: #334155;
-        text-decoration: none;
-        text-align: left;
-        background: none;
-        border: none;
-        box-sizing: border-box;
-        cursor: pointer;
-        font-family: inherit;
-    }
-
-    .dropdown-item:hover {
-        background-color: #f8fafc;
-        color: #0f172a;
-    }
-
-    .dropdown-item.delete-option {
-        color: #ef4444;
-        border-top: 1px solid #f1f5f9;
-    }
-
-    .dropdown-item.delete-option:hover {
-        background-color: #fef2f2;
-    }
-    
-    .empty-state {
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 60px 20px;
-        background: #ffffff;
-        border-radius: 12px;
-        border: 2px dashed #e2e8f0;
-    }
-
-    .empty-message {
-        color: #64748b;
-        font-size: 1.1rem;
-        margin: 0;
-    }
-
-    /* Modals styling */
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(15, 23, 42, 0.6); 
-        backdrop-filter: blur(4px);
-        z-index: 2000;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal-content {
-        background-color: #ffffff;
-        padding: 32px;
-        border-radius: 16px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        width: 100%;
-        max-width: 360px;
-        position: relative;
-        text-align: center;
-        box-sizing: border-box;
-    }
-
-    .modal-content h3 {
-        margin: 0 0 16px 0;
-        color: #0f172a;
-        font-size: 1.4rem;
-    }
-
-    .close-btn {
-        position: absolute;
-        top: 16px;
-        right: 20px;
-        font-size: 24px;
-        font-weight: bold;
-        color: #94a3b8;
-        cursor: pointer;
-        transition: color 0.2s;
-    }
-
-    .close-btn:hover {
-        color: #475569;
-    }
-
-    .modal-input {
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 20px;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        box-sizing: border-box;
-        transition: border-color 0.2s;
-    }
-
-    .modal-input:focus {
-        outline: none;
-        border-color: #607A66;
-    }
-
-    .modal-submit-btn {
-        background-color: #607A66;
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.95rem;
-        width: 100%;
-        transition: background-color 0.2s;
-    }
-
-    .modal-submit-btn:hover {
-        background-color: #4d6352;
-    }
-</style>
-
 <script>
     let activeLoopIndex = null;
+
     function openRenameModal(event, folderId, currentName, loopIndex) {
         if (event) event.stopPropagation();
         
-        var modal = document.getElementById("renameNoteModal");
-        var inputField = document.getElementById("renameInput");
-        var idField = document.getElementById("renameNoteId");
+        const modal = document.getElementById("renameNoteModal");
+        const inputField = document.getElementById("renameInput");
+        const idField = document.getElementById("renameNoteId");
 
         inputField.value = currentName;
-        if (idField) {
-            idField.value = folderId;
-        }
+        if (idField) idField.value = folderId;
         
         activeLoopIndex = loopIndex;
-        modal.style.display = "flex";
+        modal.classList.remove("hidden");
     }
 
     function closeRenameModal() {
-        document.getElementById("renameNoteModal").style.display = "none";
+        document.getElementById("renameNoteModal").classAdd("hidden");
     }
     
     function submitRename(event) {
         event.preventDefault();
-
         const form = document.getElementById('renameNoteForm');
         const formData = new FormData(form);
-        const newName = formData.get('new_note_name'); // Corrected input key matching your template tag name
+        const newName = formData.get('new_note_name');
         
         fetch(window.location.href, { 
             method: 'POST',
             body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => {
             if (response.ok) {
                 const textElement = document.getElementById(`folder-text-${activeLoopIndex}`);
-                if (textElement) {
-                    textElement.innerText = newName;
-                }
+                if (textElement) textElement.innerText = newName;
                 closeRenameModal();
             } else {
                 alert("Error updating folder name.");
             }
-        })
+        });
     }
 
     function toggleFolderActionMenu(event, menuId) {
         event.stopPropagation();
         
-        var menus = document.getElementsByClassName("note-action-dropdown");
-        for (var i = 0; i < menus.length; i++) {
-            if (menus[i].id !== menuId) {
-                menus[i].style.display = "none";
+        const dropdowns = document.getElementsByClassName("note-action-dropdown");
+        for (let i = 0; i < dropdowns.length; i++) {
+            if (dropdowns[i].id !== menuId) {
+                dropdowns[i].classList.add("hidden");
             }
         }
 
-        var targetMenu = document.getElementById(menuId);
-        if (targetMenu.style.display === "block") {
-            targetMenu.style.display = "none";
-        } else {
-            targetMenu.style.display = "block";
-        }
+        const targetMenu = document.getElementById(menuId);
+        targetMenu.classList.toggle("hidden");
     }
 
+    // Dismiss active flyouts clicking outer document nodes
     window.onclick = function(event) {
         if (!event.target.matches('.action-menu-btn')) {
-            var folderMenus = document.getElementsByClassName("note-action-dropdown");
-            for (var i = 0; i < folderMenus.length; i++) {
-                folderMenus[i].style.display = "none";
+            const dropdowns = document.getElementsByClassName("note-action-dropdown");
+            for (let i = 0; i < dropdowns.length; i++) {
+                dropdowns[i].classList.add("hidden");
             }
         }
     }
 </script>
-</body>
 {% endblock %}

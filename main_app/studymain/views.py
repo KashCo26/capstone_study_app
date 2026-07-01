@@ -113,3 +113,5 @@ def quiz_options(request):
         'folders': folders,
         'notes': notes,
     })
+def new_quiz(request):
+    return render(request, 'createquiz.html')

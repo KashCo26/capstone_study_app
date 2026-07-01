@@ -1,363 +1,135 @@
 {% extends 'base.html' %}
-{% block title %}Home - StudyApp{% endblock %}
-
+{% block title %}Quiz Selection - StudyApp{% endblock %}
 
 {% block content %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Study App Home</title>
-</head>
+<div class="max-w-6xl mx-auto py-8 px-4 font-sans">
+    
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-black text-gray-900 tracking-tight">Quiz Selection Hub</h1>
+            <p class="text-sm text-gray-500 mt-1">Configure your session parameters and select your target study material.</p>
+        </div>
+    </div>
 
-<body>
+    <form method="GET" action="" id="quizConfigForm" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div class="lg:col-span-5 space-y-6">
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-2">
+                    1. Session Parameters
+                </h2>
 
-    <h1 style="text-align: center; margin-top: 40px;">Quiz Selection</h1>
-    <h2 style="text-align: center; margin-top: 20px; font-size: 1.1rem">What would you like to be quizzed on?</h2>
-    <div class="box-container">
-        <div class="dropdown-wrapper">
-            <button class="btn folder-btn" onclick="togglePopup()">Choose Study</button>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center space-x-2">
+                        <i class="fa-solid fa-clock text-emerald-500"></i>
+                        <span>Study Time Duration</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number" name="time-chosen" id="study-time-chosen" min="1" placeholder="Enter study time (minutes)..." required
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:bg-white focus:border-[#607A66] focus:ring-4 focus:ring-[#607A66]/10 focus:outline-none transition-all">
+                        <span class="absolute right-4 top-3.5 text-xs font-bold text-gray-400 uppercase">Mins</span>
+                    </div>
+                </div>
 
-            <div id="folderPopup" class="popup-bubble">
-                <form method="GET">
-                    <div class="format-header">Choose folder</div>
-                    <select name="selected_folder" id="folder-select" class="dropdown-style" onchange="handleFolderSelect()">
-                        <option value="">--</option>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center space-x-2">
+                        <i class="fa-solid fa-list-check text-purple-500"></i>
+                        <span>Answer Format Style</span>
+                    </label>
+                    <select name="selected_format" id="format-select" required
+                        class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none cursor-pointer transition">
+                        <option value="" disabled selected>Choose evaluation type...</option>
+                        <option value="all">Select All Formats</option>
+                        <option value="true-false">True/False</option>
+                        <option value="mcq">Multiple Choice</option>
+                        <option value="allthatapply">Multi-Select Checkboxes</option>
+                        <option value="written">Written  Response</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" 
+                class="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl shadow-lg shadow-orange-500/20 text-center tracking-wider uppercase transition transform active:scale-98 flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-play text-sm"></i>
+                <span>Launch Quiz Session</span>
+            </button>
+        </div>
+
+        <div class="lg:col-span-7 space-y-6">
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col min-h-[400px]">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-3 mb-4">
+                    2. Select Folder or Sub-Topic Materials
+                </h2>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Primary Subject Folder</label>
+                    <select name="selected_folder" id="folder-select" onchange="handleFolderSelect()"
+                        class="w-full p-3 bg-blue-50/50 border border-blue-100 text-blue-900 font-semibold rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:outline-none cursor-pointer transition">
+                        <option value="">-- Choose a Subject Folder --</option>
                         {% for folder in folders %}
-                            <option value="{{ folder.id }}">{{ folder.name }}</option>
+                            <option value="{{ folder.id }}" {% if request.GET.selected_folder == folder.id|stringformat:"s" %}selected{% endif %}>
+                                📁 {{ folder.name }}
+                            </option>
                         {% empty %}
-                            <option value="" disabled>No folders available. Create one first!</option>
+                            <option value="" disabled>No subject folders available.</option>
                         {% endfor %}
                     </select>
-                </form>
+                </div>
 
-                <div id="notesPopup" class="popup-bubble notes-bubble">
-                    <div class="notes-header">Choose notes</div>
-                    <div class="checkbox-list">
+                <div class="flex-1 border-2 border-dashed border-gray-100 rounded-xl p-4 bg-gray-50/50">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Available Topics inside Folder</span>
                         {% if notes %}
-                            <label class="checkbox-item select-all-item">
-                                <input type="checkbox" id="select-all-notes" onchange="toggleSelectAll(this)">
-                                <span class="custom-checkbox"></span>
-                                <span class="note-name" style="font-weight: bold;">Select All</span>
-                            </label>
+                        <label class="inline-flex items-center space-x-2 text-xs font-bold text-blue-600 cursor-pointer select-none">
+                            <input type="checkbox" id="select-all-notes" onchange="toggleSelectAll(this)" class="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500/20">
+                            <span>Select All Notes</span>
+                        </label>
                         {% endif %}
+                    </div>
 
+                    <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
                         {% for note in notes %}
-                            <label class="checkbox-item note-checkbox-item">
-                                <input type="checkbox" name="selected_notes" value="{{ note.id }}" onchange="handleNoteCheck()">
-                                <span class="custom-checkbox"></span>
-                                <span class="note-name">{{ note.name }}</span>
+                            <label class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50/20 transition group">
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" name="selected_notes" value="{{ note.id }}" onchange="handleNoteCheck()"
+                                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500/20 transition">
+                                    <span class="text-sm font-semibold text-gray-750 group-hover:text-gray-900 transition">{{ note.name }}</span>
+                                </div>
+                                <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-md border border-gray-100 group-hover:bg-white transition">Topic Element</span>
                             </label>
                         {% empty %}
-                            <div class="no-notes">No notes available for this folder.</div>
+                            <div class="h-40 flex flex-col items-center justify-center text-center text-gray-400">
+                                <i class="fa-solid fa-folder-open text-3xl text-gray-200 mb-2"></i>
+                                {% if request.GET.selected_folder %}
+                                    <p class="text-sm font-medium">This folder doesn't contain any sub-topic notes yet.</p>
+                                {% else %}
+                                    <p class="text-sm font-medium">Please pick a subject above to view and isolate target topics.</p>
+                                {% endif %}
+                            </div>
                         {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
 
-        <button class="btn time-btn" onclick="toggleText()">Study Time</button></a>
-        <div class="text-bubble" id="textbubble">
-            <input type="text" class="text-bubbles"name="time-chosen" id="study-time-chosen" placeholder="Enter study time..." required>
-        </div>
-        <button class="btn format-btn" onclick="toggleFormat()">Answer Format</button>
-        <div id="formatPopup" class="format-bubble">
-            <div class="format-header">Choose format</div>
-                <div class="format-list">
-                    <select name="selected_format" id="format-select" class="dropdown-style">
-                        <option value="">--</option>
-                        <option value="all">Select all</option>
-                        <option value="true-false">True/False</option>
-                        <option value="mcq">Multiple Choice</option>
-                        <option value="allthatapply">Multi-select</option>
-                        <option value="written">Written Response</option>
-                    </select>
-                </div>
-            </div>
-        <button class="btn start-btn">Start</button>
-
-
-<style>
-    .box-container {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        margin-top: 30px;
-        align-items: flex-start;
-    }
-
-    .dropdown-wrapper {
-        position: relative;
-        display: inline-block;
-    }
-
-    .btn {
-        padding: 15px 30px;
-        font-size: 18px;
-        font-weight: bold;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .folder-btn { background-color: #3498db; }
-    .time-btn { background-color: #2ecc71; }
-    .format-btn { background-color: #9b59b6; }
-    .start-btn { background-color: #e68a00; }
-    
-    .btn:hover { opacity: 0.9; }
-
-    .popup-bubble {
-        display: none;
-        position: absolute;
-        background-color: #ffffff;
-        padding: 12px;
-        border-radius: 12px;
-        box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
-        border: 1px solid #e0e0e0;
-        z-index: 100;
-        min-width: 180px;
-    }
-
-    .folder-bubble {
-        top: 120%;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    .notes-bubble {
-        top: 0;
-        left: 105%; 
-        transform: none; 
-        max-height: 220px;
-        overflow-y: auto;
-    }
-
-    .format-bubble {
-        display: none;
-        position: absolute;
-        background-color: #ffffff;
-        padding: 12px;
-        border-radius: 12px;
-        box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
-        border: 1px solid #e0e0e0;
-        z-index: 100;
-        width: 190px;
-        top: 53%;
-        left: 60.5%;
-        transform: translateX(-50%);
-    }
-
-    .text-bubble {
-        display: none;
-        position: absolute;
-        background-color: #ffffff;
-        padding: 12px;
-        border-radius: 12px;
-        box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
-        border: 1px solid #e0e0e0;
-        z-index: 100;
-        max-width: 160px;
-        top: 53%;
-        left: 44.5%;
-        transform: translateX(-50%);
-    }
-
-    .text-bubbles {
-        max-width: 140px;
-    }
-
-    .text-bubbles::placeholder {
-        color: #aaa;
-        font-style: italic;
-        font-size: 15px;
-    }
-
-    .text-bubbles:focus {
-        border-color: #607A66;
-        background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(96, 122, 102, 0.15);
-        outline: none; 
-    }
-
-    .notes-header {
-        font-size: 13px;
-        font-weight: bold;
-        color: #777;
-        margin-bottom: 8px;
-        padding-bottom: 4px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .format-header {
-        font-size: 13px;
-        font-weight: bold;
-        color: #777;
-        margin-bottom: 8px;
-        padding-bottom: 4px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .checkbox-list {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .checkbox-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        padding: 4px;
-        border-radius: 4px;
-        user-select: none;
-    }
-
-    .checkbox-item:hover {
-        background-color: #f7f9fa;
-    }
-
-    .format-list {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .select-all-item {
-        padding-bottom: 8px;
-        border-bottom: 1px dashed #ddd;
-        margin-bottom: 4px;
-    }
-
-    .checkbox-item input[type="checkbox"] {
-        display: none;
-    }
-
-    .custom-checkbox {
-        width: 16px;
-        height: 16px;
-        border: 2px solid #bdc3c7;
-        border-radius: 4px;
-        display: inline-block;
-        position: relative;
-        transition: all 0.15s ease;
-    }
-
-    .checkbox-item input[type="checkbox"]:checked + .custom-checkbox {
-        background-color: #3498db;
-        border-color: #3498db;
-    }
-
-    .checkbox-item input[type="checkbox"]:checked + .custom-checkbox::after {
-        content: "";
-        position: absolute;
-        left: 4px;
-        top: 1px;
-        width: 4px;
-        height: 8px;
-        border: solid white;
-        border-width: 0 2px 2px 0;
-        transform: rotate(45deg);
-    }
-
-    .note-name {
-        font-size: 14px;
-        color: #333;
-    }
-
-    .format-name {
-        font-size: 14px;
-        color: #333;
-    }
-
-    .no-notes {
-        font-size: 13px;
-        color: #95a5a6;
-        font-style: italic;
-    }
-
-    .folder-bubble::before, .folder-bubble::after {
-        content: "";
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        border-style: solid;
-    }
-    .folder-bubble::before { border-width: 8px; border-color: transparent transparent #ffffff transparent; z-index: 2; }
-    .folder-bubble::after { border-width: 9px; border-color: transparent transparent #e0e0e0 transparent; z-index: 1; }
-
-    .notes-bubble::before, .notes-bubble::after {
-        content: "";
-        position: absolute;
-        right: 100%;
-        top: 20px;
-        border-style: solid;
-        transform: none;
-    }
-    .notes-bubble::before { border-width: 8px; border-color: transparent #ffffff transparent transparent; z-index: 2; }
-    .notes-bubble::after { border-width: 9px; border-color: transparent #e0e0e0 transparent transparent; z-index: 1; }
-
-    .dropdown-style {
-        padding: 8px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-        width: 100%;
-        font-size: 14px;
-        outline: none;
-        cursor: pointer;
-    }
-</style>
+    </form>
+</div>
 
 <script>
+    // Retain settings state directly via standard query parsing parameters on document evaluation
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const selectedFolder = urlParams.get('selected_folder');
-        
         if (selectedFolder) {
-            document.getElementById("folderPopup").style.display = "block";
-            document.getElementById("notesPopup").style.display = "block";
             document.getElementById("folder-select").value = selectedFolder;
         }
     });
-    
-    function togglePopup(event) {
-        if (event) event.stopPropagation();
-        var popup = document.getElementById("folderPopup");
-        var notesPopup = document.getElementById("notesPopup");
-        if (popup.style.display === "block") {
-            popup.style.display = "none";
-            notesPopup.style.display = "none";
-        } else {
-            popup.style.display = "block";
-        }
-    }
 
-    function toggleFormat(event) {
-        if (event) event.stopPropagation();
-        var format = document.getElementById("formatPopup");
-        if (format.style.display === "block") {
-            format.style.display = "none";
-        } else {
-            format.style.display = "block";
-        }
-    }
-
-    function toggleText(event) {
-        if (event) event.stopPropagation();
-        var text = document.getElementById("textbubble");
-        if (text.style.display === "block") {
-            text.style.display = "none";
-        } else {
-            text.style.display = "block";
-        }
-    }
-    
+    // Dynamic Form Query submission to reload available array models
     function handleFolderSelect() {
-        var folderSelect = document.getElementById("folder-select");
-        var selectedValue = folderSelect.value;
-
+        const folderSelector = document.getElementById("folder-select");
+        const selectedValue = folderSelector.value;
+        
         if (selectedValue !== "") {
             window.location.search = `?selected_folder=${selectedValue}`;
         } else {
@@ -365,6 +137,7 @@
         }
     }
 
+    // Toggle logic for checking all sub-notes items globally 
     function toggleSelectAll(masterCheckbox) {
         const noteCheckboxes = document.querySelectorAll('input[name="selected_notes"]');
         noteCheckboxes.forEach(checkbox => {
@@ -372,42 +145,13 @@
         });
     }
 
-    function toggleSelectAllFormat(masterCheckbox) {
-        const noteCheckboxes = document.querySelectorAll('input[name="selected_format"]');
-        noteCheckboxes.forEach(checkbox => {
-            checkbox.checked = masterCheckbox.checked;
-        });
-    }
-
+    // Self-monitoring check condition status for synchronization
     function handleNoteCheck() {
         const masterCheckbox = document.getElementById('select-all-notes');
         const noteCheckboxes = document.querySelectorAll('input[name="selected_notes"]');
-        
-        const allChecked = Array.from(noteCheckboxes).every(checkbox => checkbox.checked);
-        if (masterCheckbox) {
-            masterCheckbox.checked = allChecked;
+        if (masterCheckbox && noteCheckboxes.length > 0) {
+            masterCheckbox.checked = Array.from(noteCheckboxes).every(checkbox => checkbox.checked);
         }
     }
-
-    window.addEventListener('click', function(e) {
-        var textPopup = document.getElementById("textbubble");
-        var timeBtn = document.querySelector(".time-btn");
-        if (textPopup && !textPopup.contains(e.target) && e.target !== timeBtn) {
-            textPopup.style.display = "none";
-        }
-        var formatPopup = document.getElementById("formatPopup");
-        var formatBtn = document.querySelector(".format-btn");
-        if (formatPopup && !formatPopup.contains(e.target) && e.target !== formatBtn) {
-            formatPopup.style.display = "none";
-        }
-        var folderPopup = document.getElementById("folderPopup");
-        var folderBtn = document.querySelector(".folder-btn");
-        if (folderPopup && !folderPopup.contains(e.target) && e.target !== folderBtn) {
-            folderPopup.style.display = "none";
-            document.getElementById("notesPopup").style.display = "none";
-        }
-    });
 </script>
-
-
 {% endblock %}

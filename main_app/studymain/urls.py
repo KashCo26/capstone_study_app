@@ -8,5 +8,6 @@ urlpatterns = [
     path('newnote/', views.create_note, name='newnote'),
     path('viewnotes/<str:folder_name>/', views.display_notes, name='viewnotes'),
     path('notecontent/<str:note_name>/', views.show_note, name='notecontent'),
-    path('quizselect/', views.quiz_options, name='quizselect')
+    path('quizselect/', views.quiz_options, name='quizselect'),
+    path('createquiz/', views.new_quiz, name='createquiz')
 ]

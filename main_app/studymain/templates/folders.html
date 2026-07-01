@@ -1,432 +1,208 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
 {% block title %}Folders - StudyApp{% endblock %}
 
 {% block content %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Study Dashboard</title>
-</head>
-<body>
+<div class="max-w-6xl mx-auto py-8 px-4 font-sans min-h-screen relative">
 
-    <h1>My Study Folders</h1>
+    <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
+        <div>
+            <h1 class="text-2xl font-black text-gray-900 tracking-tight">My Study Folders</h1>
+            <p class="text-sm text-gray-500 mt-1">Organize your study files, access your topics, or isolate quiz parameters.</p>
+        </div>
+        
+        <div class="notes-wrapper relative inline-block text-left">
+            <button class="plus-btn w-12 h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-full text-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 transition transform active:scale-95 focus:outline-none" 
+                onclick="togglePopup()">
+                ＋
+            </button>
 
-    <div class="notes-wrapper">
-        <button class="plus-btn" onclick="togglePopup()">＋</button>
-
-        <div id="notesPopup" class="popup-menu">
-            <a href="/newnote/" class="popup-item">New Note</a>
-            <a href="#" class="popup-item" onclick="openFolderModal(); toggleDropdown(); return false;">New Folder</a>
+            <div id="notesPopup" class="popup-menu hidden absolute right-0 mt-3 bg-white border border-gray-200 rounded-xl shadow-xl w-44 z-50 overflow-hidden divide-y divide-gray-100">
+                <a href="/newnote/" class="popup-item block px-4 py-3 text-xs font-bold text-gray-750 hover:bg-gray-50 transition">
+                    New Note
+                </a>
+                <a href="#" class="popup-item block px-4 py-3 text-xs font-bold text-gray-750 hover:bg-gray-50 transition" 
+                   onclick="openFolderModal(); toggleDropdown(); return false;">
+                    New Folder
+                </a>
+            </div>
         </div>
     </div>
 
-<style>
-    .notes-wrapper {
-        position: absolute;
-        top: 80px;
-        right: 20px;
-        z-index: 1000;
-        font-family: Verdana, sans-serif;
-    }
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+        {% for folder in folders %}
+            <div class="relative group bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200"> 
+                
+                <button type="button" onclick="goToFolder('{{ folder.name|escapejs }}')" 
+                    class="w-full h-24 flex flex-col items-center justify-center text-center focus:outline-none">
+                    <span class="text-3xl mb-2 filter drop-shadow-sm">📁</span>
+                    <strong id="folder-text-{{ forloop.counter }}" class="text-sm font-bold text-gray-800 tracking-tight break-all line-clamp-1 px-2">
+                        {{ folder.name|truncatechars:10 }}
+                    </strong>
+                </button>
 
-    .plus-btn {
-        width: 45px;
-        height: 45px;
-        background-color: #2ecc71;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        font-size: 24px;
-        font-weight: bold;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        transition: background 0.2s, transform 0.1s;
-    }
+                <button type="button" onclick="toggleFolderActionMenu(event, 'menu-{{ forloop.counter }}')" 
+                    class="action-menu-btn absolute top-3 right-3 text-lg font-extrabold text-gray-400 hover:text-gray-900 hover:bg-gray-100 px-2 py-0.5 rounded-lg z-10 transition">
+                    &#8942;
+                </button>
 
-    .plus-btn:hover {
-        background-color: #27ae60;
-    }
+                <div id="menu-{{ forloop.counter }}" class="folder-action-dropdown hidden absolute top-10 right-3 bg-white border border-gray-200 rounded-xl shadow-xl w-32 z-20 overflow-hidden divide-y divide-gray-100">
+                    <a href="#" onclick="openRenameModal(event, '{{ folder.id }}', '{{ folder.name|escapejs }}', '{{ forloop.counter }}'); return false;" 
+                       class="block px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition text-left">
+                        Rename
+                    </a>
+                    <form method="POST" onsubmit="return confirm('Are you sure you want to delete {{ folder.name|escapejs }}?');" class="m-0">
+                        {% csrf_token %}
+                        <input type="hidden" id="deleted_folder" name="deleted_folder" value="{{ folder.id }}">
+                        <button type="submit" class="block w-full px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition text-left">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-full text-center py-16 px-4 bg-white border-2 border-dashed border-gray-200 rounded-2xl">
+                <i class="fa-solid fa-folder-open text-4xl text-gray-200 mb-3 block"></i>
+                <p class="text-sm font-medium text-gray-500">No folders created yet. Start by creating one using the plus button above!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
 
-    .plus-btn:active {
-        transform: scale(0.95);
-    }
-
-    .popup-menu {
-        display: none;
-        position: absolute;
-        top: 55px;
-        right: 0;
-        background-color: white;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
-        width: 160px;
-        overflow: hidden;
-    }
-
-    .popup-item {
-        display: block;
-        padding: 12px 16px;
-        color: #333;
-        text-decoration: none;
-        font-size: 14px;
-        transition: background 0.2s;
-    }
-
-    .popup-item:hover {
-        background-color: #f5f5f5;
-    }
-
-    .popup-item:not(:last-child) {
-        border-bottom: 1px solid #eee;
-    }
-</style>
-
-<div id="folderModal" class="modal-overlay">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeFolderModal()">&times;</span>
-        <h3>Create New Folder</h3>
+<div id="folderModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm relative text-center transform transition-all">
+        <span class="absolute top-4 right-5 text-2xl font-bold text-gray-400 hover:text-gray-600 cursor-pointer transition" onclick="closeFolderModal()">&times;</span>
+        <h3 class="text-xl font-extrabold text-gray-900 mb-4">Create New Folder</h3>
         
         <form method="POST">
             {% csrf_token %}
-            <input type="text" name="folder_name" placeholder="Enter folder name..." required class="modal-input">
-            <button type="submit" class="modal-submit-btn">Create Folder</button>
+            <input type="text" name="folder_name" placeholder="Enter folder name..." required 
+                class="w-full p-3 mb-5 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-[#607A66] focus:ring-4 focus:ring-[#607A66]/10 transition">
+            <button type="submit" class="w-full bg-[#607A66] hover:bg-[#4d6352] text-white font-bold p-3 rounded-xl text-sm transition shadow-md shadow-[#607A66]/10">
+                Create Folder
+            </button>
         </form>
     </div>
 </div>
 
-<style>
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.4); 
-        z-index: 2000;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal-content {
-        background-color: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        width: 320px;
-        position: relative;
-        text-align: center;
-        font-family: Arial, sans-serif;
-    }
-
-    .close-btn {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 22px;
-        font-weight: bold;
-        color: #aaa;
-        cursor: pointer;
-    }
-
-    .close-btn:hover {
-        color: #333;
-    }
-
-    .modal-input {
-        width: 90%;
-        padding: 10px;
-        margin: 15px 0;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 14px;
-    }
-
-    .modal-submit-btn {
-        background-color: #607A66;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-        width: 97%;
-    }
-
-    .modal-submit-btn:hover {
-        opacity: 0.9;
-    }
-</style>
-
-<script>
-    function togglePopup() {
-        var popup = document.getElementById("notesPopup");
-        if (popup.style.display === "block") {
-            popup.style.display = "none";
-        } else {
-            popup.style.display = "block";
-        }
-    }
-</script>
-
-<hr>
-
-<div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; font-family: Arial, sans-serif;">
-    {% for folder in folders %}
-        <div class="folder-wrapper"> 
-            <button type="button" class="folder-btn" onclick="goToFolder('{{ folder.name|escapejs }}')" style="text-align: center;">
-            📁<br>
-            <strong id="folder-text-{{ forloop.counter }}">{{ folder.name|truncatechars:10 }}</strong></button>
-
-            <button type="button" class="action-menu-btn" onclick="toggleFolderActionMenu(event, 'menu-{{ forloop.counter }}')">&#8942;</button>
-
-            <div id="menu-{{ forloop.counter }}" class="folder-action-dropdown">
-                <a href="#" class="dropdown-item" onclick="openRenameModal(event, '{{ folder.id }}', '{{ folder.name|escapejs }}', '{{ forloop.counter }}'); return false;">Rename</a>
-                <form method="POST" onsubmit="return confirm('Are you sure you want to delete {{ folder.name|escapejs }}?');">
-                    {% csrf_token %}
-                    <input type="hidden" id="deleted_folder" name="deleted_folder" value="{{ folder.id }}">
-                    <button type="submit" class="dropdown-item-delete-option" style="border: none; width: 100%; height: 100%; text-align: left; padding: 0.25rem 0.8rem 0.75rem;">
-                        Delete
-                    </button>
-                </form>
-            </div>
-        </div>
-    {% empty %}
-        <p>No folders created yet. Start by creating one using the plus button above!</p>
-    {% endfor %}
-</div>
-
-<div id="renameFolderModal" class="modal-overlay">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeRenameModal()">&times;</span>
-        <h3>Rename Folder</h3>
+<div id="renameFolderModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm relative text-center transform transition-all">
+        <span class="absolute top-4 right-5 text-2xl font-bold text-gray-400 hover:text-gray-600 cursor-pointer transition" onclick="closeRenameModal()">&times;</span>
+        <h3 class="text-xl font-extrabold text-gray-900 mb-4">Rename Folder</h3>
                     
         <form id="renameFolderForm" onsubmit="submitRename(event)" method="POST" action="">
             {% csrf_token %}
-                <input type="hidden" id="renameFolderId" name="folder_id">
-                <input type="text" id="renameInput" name="new_folder_name" placeholder="Enter new folder name..." required class="modal-input">
-                <button type="submit" class="modal-submit-btn">Save Changes</button>
+            <input type="hidden" id="renameFolderId" name="folder_id">
+            <input type="text" id="renameInput" name="new_folder_name" placeholder="Enter new folder name..." required 
+                class="w-full p-3 mb-5 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-[#607A66] focus:ring-4 focus:ring-[#607A66]/10 transition">
+            <button type="submit" class="w-full bg-[#607A66] hover:bg-[#4d6352] text-white font-bold p-3 rounded-xl text-sm transition shadow-md shadow-[#607A66]/10">
+                Save Changes
+            </button>
         </form>
     </div>
 </div>
 
 <script>
+    // Restored your original togglePopup script framework matching classList toggles
+    function togglePopup() {
+        var popup = document.getElementById("notesPopup");
+        popup.classList.toggle("hidden");
+    }
+
+    // Restored original toggleDropdown logic matching previous template declarations
+    function toggleDropdown() {
+        var dropdown = document.getElementById("notesPopup");
+        dropdown.classList.toggle("hidden");
+    }
+
+    function openFolderModal() {
+        document.getElementById("folderModal").classList.remove("hidden");
+    }
+
+    function closeFolderModal() {
+        document.getElementById("folderModal").classList.add("hidden");
+    }
+
     let activeLoopIndex = null;
     function openRenameModal(event, folderId, currentName, loopIndex) {
         if (event) event.stopPropagation();
         
-        var modal = document.getElementById("renameFolderModal");
-        var inputField = document.getElementById("renameInput");
-        var idField = document.getElementById("renameFolderId");
+        const modal = document.getElementById("renameFolderModal");
+        const inputField = document.getElementById("renameInput");
+        const idField = document.getElementById("renameFolderId");
 
         inputField.value = currentName;
-        if (idField) {
-            idField.value = folderId;
-        }
+        if (idField) idField.value = folderId;
         
         activeLoopIndex = loopIndex;
-        modal.style.display = "flex";
+        modal.classList.remove("hidden");
     }
 
     function closeRenameModal() {
-        document.getElementById("renameFolderModal").style.display = "none";
+        document.getElementById("renameFolderModal").classList.add("hidden");
     }
     
     function submitRename(event) {
         event.preventDefault();
-
         const form = document.getElementById('renameFolderForm');
         const formData = new FormData(form);
         const newName = formData.get('new_folder_name');
-        const csrfToken = formData.get('csrfmiddlewaretoken');
         
         fetch(window.location.href, { 
             method: 'POST',
             body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => {
             if (response.ok) {
-                console.log("Updating UI folder index:", activeLoopIndex);
-                
                 const textElement = document.getElementById(`folder-text-${activeLoopIndex}`);
-                
-                if (textElement) {
-                    textElement.innerText = newName;
-                    console.log("Successfully updated text element to:", newName);
-                } else {
-                    console.error(`Could not find HTML element with ID: folder-text-${activeLoopIndex}`);
-                }
+                if (textElement) textElement.innerText = newName;
                 closeRenameModal();
             } else {
                 alert("Error updating folder name.");
             }
-        })
+        });
     }
 
-    function toggleDropdown() {
-        var dropdown = document.getElementById("notesPopup");
-        if (dropdown.style.display === "block") {
-            dropdown.style.display = "none";
-        } else {
-            dropdown.style.display = "block";
-        }
-    }
-
-    function openFolderModal() {
-        document.getElementById("folderModal").style.display = "flex";
-    }
-
-    function closeFolderModal() {
-        document.getElementById("folderModal").style.display = "none";
-    }
-</script>
-
-
-<script>
     function goToFolder(folderName) {
         if (folderName) {
-            var folderName = encodeURIComponent(folderName);
-            window.location.href = "/viewnotes/" + folderName + "/";
+            window.location.href = "/viewnotes/" + encodeURIComponent(folderName) + "/";
         }
     }
 
     function toggleFolderActionMenu(event, menuId) {
         event.stopPropagation();
         
-        var menus = document.getElementsByClassName("folder-action-dropdown");
-        for (var i = 0; i < menus.length; i++) {
-            if (menus[i].id !== menuId) {
-                menus[i].style.display = "none";
+        const dropdowns = document.getElementsByClassName("folder-action-dropdown");
+        for (let i = 0; i < dropdowns.length; i++) {
+            if (dropdowns[i].id !== menuId) {
+                dropdowns[i].classList.add("hidden");
             }
         }
 
-        var targetMenu = document.getElementById(menuId);
-        if (targetMenu.style.display === "block") {
-            targetMenu.style.display = "none";
-        } else {
-            targetMenu.style.display = "block";
-        }
+        const targetMenu = document.getElementById(menuId);
+        targetMenu.classList.toggle("hidden");
     }
 
+    // Window global listeners monitoring clicks outside modal domains
     window.onclick = function(event) {
-        var modal = document.getElementById("folderModal");
-        var mainPopup = document.getElementById("notesPopup");
+        const modal = document.getElementById("folderModal");
+        const mainPopup = document.getElementById("notesPopup");
 
+        // Fixed match condition targeted precisely against your restored class rules
         if (!event.target.matches('.plus-btn')) {
-            if (mainPopup && mainPopup.style.display === "block") {
-                mainPopup.style.display = "none";
-            }
+            if (mainPopup) mainPopup.classList.add("hidden");
         }
 
         if (!event.target.matches('.action-menu-btn')) {
-            var folderMenus = document.getElementsByClassName("folder-action-dropdown");
-            for (var i = 0; i < folderMenus.length; i++) {
-                folderMenus[i].style.display = "none";
+            const folderMenus = document.getElementsByClassName("folder-action-dropdown");
+            for (let i = 0; i < folderMenus.length; i++) {
+                folderMenus[i].classList.add("hidden");
             }
         }
 
         if (event.target === modal) {
-            modal.style.display = "none";
+            modal.classList.add("hidden");
         }
     }
 </script>
-
-<style>
-    .folder-wrapper {
-        position: relative;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-        gap: 24px;
-    }
-
-    .folder-btn {
-        width: 100%;
-        height: 120px;
-        background-color: #FFF8DC;
-        padding: 15px;
-        border: 2px solid #FFA500;
-        border-radius: 8px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        transition: background 0.2s, transform 0.1s;
-    }
-    
-    .folder-btn:hover {
-        background-color: #feeeafd3;
-        cursor: pointer;
-    }
-
-    .action-menu-btn {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: none;
-        border: none;
-        font-size: 18px;
-        font-weight: bold;
-        color: #777;
-        cursor: pointer;
-        padding: 0 6px;
-        line-height: 1;
-        border-radius: 4px;
-        z-index: 5;
-    }
-
-    .action-menu-btn:hover {
-        background-color: rgba(0, 0, 0, 0.08);
-        color: #333;
-    }
-
-    .folder-action-dropdown {
-        display: none;
-        position: absolute;
-        top: 32px;
-        right: 8px;
-        background-color: white;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-        width: 110px;
-        z-index: 10;
-        overflow: hidden;
-        cursor: pointer;
-    }
-
-    .dropdown-item {
-        display: block;
-        padding: 8px 12px;
-        color: #333;
-        text-decoration: none;
-        font-size: 13px;
-        text-align: left;
-    }
-
-    .dropdown-item:hover {
-        background-color: #f5f5f5;
-    }
-
-    .dropdown-item-delete-option {
-        color: #e74c3c;
-        border-top: 1px solid #eee;
-        cursor: pointer;
-        background: none;
-    }
-
-    .dropdown-item-delete-option:hover {
-        background-color: #fef2f2;
-    }
-</style>
-
-</body>
 {% endblock %}
