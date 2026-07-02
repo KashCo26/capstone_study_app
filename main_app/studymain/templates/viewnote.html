@@ -2,6 +2,8 @@
 {% block title %}View Note - StudyApp{% endblock %}
 
 {% block content %}
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
 <div class="max-w-4xl mx-auto py-8 px-4 font-sans min-h-screen relative pb-24">
 
     <div class="mb-8">
@@ -9,7 +11,7 @@
         <p class="text-sm text-gray-500 mt-1">Modify your content, update headings, or reassign this note to a different folder.</p>
     </div>
 
-    <form method="POST" class="space-y-6">
+    <form id="editNoteForm" method="POST" class="space-y-6" novalidate>
         {% csrf_token %}
         
         <div class="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
@@ -42,13 +44,16 @@
                 </select>
             </div>
 
-            <div class="pt-4 border-t border-gray-100">
-                <label for="doc-box" class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Notes Content</label>
-                <textarea id="doc-box" 
-                          name="note_text" 
-                          placeholder="Start typing your study notes here..."
-                          class="w-full h-96 p-4 text-sm font-medium text-gray-800 bg-gray-50/50 border border-gray-200 rounded-xl resize-y leading-relaxed transition-all duration-200 focus:outline-none focus:bg-white focus:border-gray-350"
-                >{{ note_text }}</textarea>
+            <div class="pt-4 border-t border-gray-100 space-y-2">
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Notes Content</label>
+                
+                <input type="hidden" id="note_text_hidden" name="note_text">
+
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden group focus-within:border-gray-300 focus-within:ring-4 focus-within:ring-gray-50 transition-all duration-200">
+                    <div id="editor" class="h-96 text-sm font-medium text-gray-800 leading-relaxed p-4">
+                        {{ note_text|safe }}
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -65,4 +70,44 @@
         </div>
     </form>
 </div>
+
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
+
+<script>
+    // Register structural components
+    Quill.register('modules/imageResize', ImageResize.default);
+
+    const quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: 'Start typing your study notes here...',
+        modules: {
+            toolbar: [
+                ['bold', 'italic'],
+                ['image']
+            ],
+            imageResize: {
+                modules: [ 'Resize', 'DisplaySize', 'Toolbar' ]
+            }
+        }
+    });
+
+    // Format boundaries
+    const toolbar = document.querySelector('.ql-toolbar');
+    const container = document.querySelector('.ql-container');
+    if(toolbar && container) {
+        toolbar.style.border = 'none';
+        toolbar.style.borderBottom = '1px solid #f3f4f6';
+        container.style.border = 'none';
+    }
+
+    // Capture submissions to compile update parameters
+    document.getElementById('editNoteForm').addEventListener('submit', function(event) {
+        // Extract the editor payload
+        const richContent = quill.root.innerHTML;
+        
+        // Pass contents to hidden variable right before form leaves page
+        document.getElementById('note_text_hidden').value = richContent;
+    });
+</script>
 {% endblock %}

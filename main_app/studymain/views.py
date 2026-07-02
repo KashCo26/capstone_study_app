@@ -148,9 +148,13 @@ def new_quiz(request):
         if flashcards_to_create:
             Flashcard.objects.bulk_create(flashcards_to_create)
                 
-            return redirect('folders')
+            return redirect('viewquiz')
     
     return render(request, 'createquiz.html', {
         'folders': folders,
         'notes': notes,
     })
+
+def see_quiz(request):
+    study_sets = StudySet.objects.all().order_by('-created_at').prefetch_related('cards')
+    return render(request, 'viewquizzes.html', {'study_sets': study_sets})
