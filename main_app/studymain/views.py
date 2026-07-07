@@ -210,7 +210,6 @@ def quiz_edit(request, quiz_id):
     })
 
 import json
-import os
 from openai import OpenAI
 
 def take_quiz_view(request, set_id):
@@ -227,7 +226,6 @@ def take_quiz_view(request, set_id):
             "answer": card.back
         })
 
-    # OpenAI expects schemas inside a clean JSON schema format structure
     openai_bulk_schema = {
         "type": "object",
         "properties": {
@@ -255,9 +253,8 @@ def take_quiz_view(request, set_id):
     ai_distractors_map = {}
 
     try:
-        # OpenAI completion format block translation
         response = client.chat.completions.create(
-            model="gpt-4o-mini", # Alternative model choice
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "user",
@@ -281,7 +278,6 @@ def take_quiz_view(request, set_id):
             temperature=0.7
         )
         
-        # Accessing content string requires digging through choices objects array index path
         ai_data = json.loads(response.choices[0].message.content)
         for item in ai_data.get('quiz_cards', []):
             item_id = item.get('id')
@@ -291,7 +287,6 @@ def take_quiz_view(request, set_id):
     except Exception as e:
         print(f"🚨 Bulk OpenAI API Failure: {e}")
 
-    # The rest of your Django formatting loop remains exactly the same!
     for card in raw_cards:
         distractors_list = ai_distractors_map.get(str(card.id)) or ai_distractors_map.get(card.id)
         
