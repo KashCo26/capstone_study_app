@@ -20,7 +20,7 @@
         {% for study_set in study_sets %}
             <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 flex flex-col justify-between group relative">
                 
-                <div>
+                <a href="/editquiz/{{ study_set.id }}/"><div>
                     {% if study_set.folder %}
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-gray-100 text-gray-600 mb-4">
                             📁 {{ study_set.folder.name }}
@@ -46,7 +46,7 @@
                     </span>
 
                     <div class="flex items-center gap-2">
-                        <a href="/quiz/{{ study_set.id }}/" class="h-9 px-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-700 text-xs font-bold rounded-xl flex items-center justify-center transition border border-gray-200 hover:border-blue-200">
+                        <a href="/takequiz/{{ study_set.id }}/" class="h-9 px-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-700 text-xs font-bold rounded-xl flex items-center justify-center transition border border-gray-200 hover:border-blue-200">
                             Practice
                         </a>
                     </div>

@@ -10,5 +10,7 @@ urlpatterns = [
     path('notecontent/<str:note_name>/', views.show_note, name='notecontent'),
     path('quizselect/', views.quiz_options, name='quizselect'),
     path('createquiz/', views.new_quiz, name='createquiz'),
-    path('viewquizzes/', views.see_quiz, name='viewquizzes')
+    path('viewquizzes/', views.see_quiz, name='viewquizzes'),
+    path('editquiz/<str:quiz_id>/', views.quiz_edit, name='editquiz'),
+    path('takequiz/<str:set_id>/', views.take_quiz_view, name='flashcard-practice')
 ]
