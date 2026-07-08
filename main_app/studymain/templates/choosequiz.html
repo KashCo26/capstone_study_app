@@ -11,7 +11,8 @@
         </div>
     </div>
 
-    <form method="GET" action="" id="quizConfigForm" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <form method="POST" action="{% url 'takelesson' %}" id="quizConfigForm" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {% csrf_token %}
         
         <div class="lg:col-span-5 space-y-6">
             <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5">
@@ -39,17 +40,16 @@
                     <select name="selected_format" id="format-select" required
                         class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 focus:outline-none cursor-pointer transition">
                         <option value="" disabled selected>Choose evaluation type...</option>
-                        <option value="all">Select All Formats</option>
-                        <option value="true-false">True/False</option>
-                        <option value="mcq">Multiple Choice</option>
-                        <option value="allthatapply">Multi-Select Checkboxes</option>
-                        <option value="written">Written  Response</option>
+                        <option name="selected_format" value="all">Select All Formats</option>
+                        <option name="selected_format" value="true-false">True/False</option>
+                        <option name="selected_format" value="mcq">Multiple Choice</option>
+                        <option name="selected_format" value="allthatapply">Multi-Select Checkboxes</option>
+                        <option name="selected_format" value="written">Written  Response</option>
                     </select>
                 </div>
             </div>
 
-            <button type="submit" 
-                class="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl shadow-lg shadow-orange-500/20 text-center tracking-wider uppercase transition transform active:scale-98 flex items-center justify-center space-x-2">
+            <button type="submit" class="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl shadow-lg shadow-orange-500/20 text-center tracking-wider uppercase transition transform active:scale-98 flex items-center justify-center space-x-2">
                 <i class="fa-solid fa-play text-sm"></i>
                 <span>Launch Quiz Session</span>
             </button>

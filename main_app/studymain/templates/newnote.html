@@ -88,7 +88,7 @@
                 ['bold', 'italic'],
                 ['image']
             ],
-            // FIXED: Activated the interactivity module layer
+            // Activated the interactivity module layer
             imageResize: {
                 modules: [ 'Resize', 'DisplaySize', 'Toolbar' ]
             }
@@ -131,7 +131,6 @@
         input.onchange = () => {
             const file = input.files[0];
             
-            # Limit size to 2MB (2 * 1024 * 1024 bytes)
             if (file.size > 2 * 1024 * 1024) { 
                 alert("This image is too large! Please choose an image smaller than 2MB.");
                 return;

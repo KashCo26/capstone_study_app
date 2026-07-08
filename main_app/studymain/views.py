@@ -113,47 +113,224 @@ def quiz_options(request):
         'folders': folders,
         'notes': notes,
     })
+    
+def generate_quiz_session(request):
+    if request.method != 'POST':
+        return redirect('quiz_options')
+        
+    selected_format = request.POST.get('selected_format')
+    time_chosen = request.POST.get('time-chosen')
+    selected_note_ids = request.POST.getlist('selected_notes') 
+    
+    if not selected_note_ids:
+        return redirect('quiz_options')
+
+    selected_notes_records = Notes.objects.filter(id__in=selected_note_ids)
+    combined_notes_text = ""
+    for note in selected_notes_records:
+        combined_notes_text += f"\n--- Section: {note.name} ---\n{note.text}\n"
+
+    if selected_format == 'all':
+        format_instruction = "mix of True or False, Multiple Choice, Select all that Apply, and Written Responses"
+    elif selected_format == 'true-false':
+        format_instruction = "Strictly True or False"
+    elif selected_format == 'mcq':
+        format_instruction = "Strictly Multiple Choice (single answer)"
+    elif selected_format == 'allthatapply':
+        format_instruction = "Strictly Select all that Apply (checkboxes with multiple true options)"
+    elif selected_format == 'written':
+        format_instruction = "Strictly Written Short Answers"
+    else:
+        format_instruction = "General Review Questions"
+
+    client = OpenAI()
+    
+    # 💡 UPDATED SCHEMA: Includes explicit types and choice options
+    quiz_schema = {
+        "type": "object",
+        "properties": {
+            "title": {"type": "string"},
+            "cards": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string", 
+                            "enum": ["true-false", "mcq", "allthatapply", "written"],
+                            "description": "Categorize the structured type of question."
+                        },
+                        "question": {"type": "string"},
+                        "options": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "List of options for mcq, true-false, or allthatapply. Leave empty for written."
+                        },
+                        "answer": {
+                            "type": "string",
+                            "description": "For true-false/mcq: matching string. For allthatapply: comma-separated true options. For written: model answer string."
+                        }
+                    },
+                    "required": ["type", "question", "options", "answer"],
+                    "additionalProperties": False
+                }
+            }
+        },
+        "required": ["title", "cards"],
+        "additionalProperties": False
+    }
+
+    generated_cards = []
+    quiz_title = "AI Study Session"
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system", 
+                    "content": "You are a professional teacher's assistant. Build structured quiz items conforming to the targeted parameters."
+                },
+                {
+                    "role": "user", 
+                    "content": (
+                        f"Generate dynamic flashcard test items matching a {time_chosen} minute study load in the layout format of: {format_instruction}.\n"
+                        f"Notes material:\n{combined_notes_text}\n\n"
+                        f"CRITICAL RULES:\n"
+                        f"1. For 'allthatapply', include multiple valid options in the options array, and make the 'answer' field a clean comma-separated string of all correct values.\n"
+                        f"2. For 'mcq', provide 1 correct answer and 3 distinct distractors in the options array.\n"
+                        f"3. For 'true-false', options must strictly be ['True', 'False']."
+                    )
+                }
+            ],
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "quiz_generation_schema",
+                    "strict": True,
+                    "schema": quiz_schema
+                }
+            }
+        )
+        
+        import json
+        ai_payload = json.loads(response.choices[0].message.content)
+        quiz_title = ai_payload.get('title', 'AI Study Session')
+        generated_cards = ai_payload.get('cards', [])
+
+    except Exception as e:
+        print(f"Failed to generate quiz: {e}")
+    
+    return render(request, 'active_quiz_session.html', {
+        'title': quiz_title,
+        'quiz_cards': generated_cards,
+        'duration': time_chosen
+    })
+    
 
 def new_quiz(request):
     folders = Folder.objects.all()
     notes = None
     folder_id = request.GET.get('folder_label')
     
-    if folder_id:
-        notes = Notes.objects.filter(folder_id=folder_id)
-    else:
-        notes = Notes.objects.all()
-        
-    set_name = request.POST.get('set_name')
-    questions = request.POST.getlist('question[]')
-    answers = request.POST.getlist('answer[]')
+    if request.method == 'POST':
+        set_name = request.POST.get('set_name', 'Untitled Set')
+        questions = request.POST.getlist('question[]')
+        answers = request.POST.getlist('answer[]')
+        action = request.POST.get('action')
+        note_id = request.POST.get('note_source')
     
-    if set_name and questions and answers:    
-        study_set = StudySet.objects.create(
-                name=set_name.strip()
-                # folder=some_folder_object (optional: link to a folder if selected)
-            )
+        client = OpenAI()
+        if action == 'generate_ai':
+            prompt_material = ""
             
-        flashcards_to_create = []
-        for q_text, a_text in zip(questions, answers):
-            if q_text.strip() and a_text.strip():
-                flashcards_to_create.append(
-                    Flashcard(
-                        study_set=study_set,
-                        front=q_text.strip(),
-                        back=a_text.strip()
-                    )
+            if note_id:
+                selected_note = get_object_or_404(Notes, id=note_id)
+                prompt_material = f"Generate questions based strictly on these notes:\n{selected_note.text}"
+            else:
+                prompt_material = f"Generate broad foundational quiz questions regarding this general topic: '{set_name}'"
+            
+            quiz_schema = {
+                "type": "object",
+                "properties": {
+                    "cards": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "question": {"type": "string"},
+                                "answer": {"type": "string"}
+                            },
+                            "required": ["question", "answer"],
+                            "additionalProperties": False
+                        }
+                    }
+                },
+                "required": ["cards"],
+                "additionalProperties": False
+            }
+            
+            try:
+                response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[
+                            {"role": "system", "content": "You are a professional teacher assistant compiling study flashcard decks."},
+                            {"role": "user", "content": f"{prompt_material}\nGenerate exactly 5 comprehensive matching card items containing clear questions and concise answers."}
+                        ],
+                        response_format={
+                            "type": "json_schema",
+                            "json_schema": {
+                                "name": "quiz_set_generation",
+                                "strict": True,
+                                "schema": quiz_schema
+                            }
+                        }
                 )
-            
-        if flashcards_to_create:
-            Flashcard.objects.bulk_create(flashcards_to_create)
+                ai_data = json.loads(response.choices[0].message.content)
+                generated_cards = ai_data.get('cards', [])
+                print(generated_cards)
                 
-            return redirect('viewquizzes')
+                return render(request, 'createquiz.html', {
+                    'folders': folders,
+                    'prefilled_name': set_name,
+                    'prefilled_cards': generated_cards
+                })
+            
+            except Exception as e:
+                print(f"AI Generation failed: {e}")
+                    
+        
+        if folder_id:
+            notes = Notes.objects.filter(folder_id=folder_id)
+        else:
+            notes = Notes.objects.all()
+        
+        if set_name and questions and answers:    
+            study_set = StudySet.objects.create(
+                    name=set_name.strip()
+            )
+                
+            flashcards_to_create = []
+            for q_text, a_text in zip(questions, answers):
+                if q_text.strip() and a_text.strip():
+                    flashcards_to_create.append(
+                        Flashcard(
+                            study_set=study_set,
+                            front=q_text.strip(),
+                            back=a_text.strip()
+                        )
+                    )
+                
+            if flashcards_to_create:
+                Flashcard.objects.bulk_create(flashcards_to_create)
+                    
+                return redirect('viewquizzes')
+                
     
     return render(request, 'createquiz.html', {
         'folders': folders,
-        'notes': notes,
-    })
+        'notes': notes
+        })
 
 def see_quiz(request):
     study_sets = StudySet.objects.all().order_by('-created_at').prefetch_related('cards')

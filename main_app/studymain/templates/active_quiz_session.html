@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - Live Session{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4 font-sans min-h-screen flex flex-col justify-between pb-24">
+    
+    <header class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+            <span class="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100">
+                Active Session
+            </span>
+            <h1 class="text-xl font-black text-gray-900 tracking-tight mt-2">{{ title }}</h1>
+        </div>
+        
+        <div class="flex items-center space-x-3 bg-gray-50 border border-gray-200 px-4 py-2 rounded-xl">
+            <i class="fa-solid fa-clock text-orange-500 animate-pulse"></i>
+            <div class="text-right">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Time Remaining</p>
+                <p id="countdownTimer" class="text-sm font-mono font-black text-gray-800">--:--</p>
+            </div>
+        </div>
+    </header>
+
+    <main id="quizWindow" class="bg-white border border-gray-200 rounded-3xl p-6 sm:p-8 shadow-sm flex-1 flex flex-col justify-between min-h-[350px]">
+        
+        <div id="questionContainer" class="space-y-6">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+                <span id="cardNumberTracker" class="text-xs font-bold text-gray-400 uppercase tracking-wider">Question 1</span>
+                <span id="scoreTrackerIndicator" class="text-xs font-bold px-2.5 py-0.5 rounded-full hidden">Correct!</span>
+            </div>
+            
+            <h2 id="currentQuestionText" class="text-lg font-bold text-gray-800 leading-relaxed"></h2>
+
+            <div id="answerOptionsWrapper" class="space-y-3 pt-2"></div>
+            
+            <div id="overrideWrapper" class="hidden text-right pt-1">
+                <button type="button" id="overrideBtn" class="text-xs text-blue-500 hover:text-blue-700 font-bold underline transition">
+                    I was right, override score!
+                </button>
+            </div>
+        </div>
+
+        <footer class="pt-8 border-t border-gray-100 mt-8 flex justify-between items-center">
+            <button id="skipBtn" type="button" class="px-5 py-2.5 text-sm font-bold text-gray-400 hover:text-gray-600 transition">
+                Skip Field
+            </button>
+            
+            <button id="actionControlBtn" type="button" class="px-8 py-3 bg-[#607A66] hover:bg-[#4d6352] text-white font-bold text-sm rounded-xl shadow-md transition transform active:scale-95 duration-100">
+                Check Answer
+            </button>
+        </footer>
+    </main>
+
+    <section id="resultsWindow" class="hidden bg-white border border-gray-200 rounded-3xl p-8 shadow-md text-center space-y-6 my-auto">
+        <div class="w-16 h-16 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+            <i class="fa-solid fa-trophy text-2xl text-amber-500"></i>
+        </div>
+        <div>
+            <h2 class="text-2xl font-black text-gray-900 tracking-tight">Quiz Session Finished!</h2>
+        </div>
+        
+        <div class="max-w-xs mx-auto border border-gray-100 rounded-2xl p-4 bg-gray-50/50 flex justify-around items-center">
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase">Final Score</p>
+                <p id="finalScoreRatio" class="text-2xl font-black text-gray-800 mt-0.5">0 / 0</p>
+            </div>
+            <div class="h-8 w-px bg-gray-200"></div>
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase">Accuracy Rate</p>
+                <p id="finalAccuracyPercent" class="text-2xl font-black text-emerald-600 mt-0.5">0%</p>
+            </div>
+        </div>
+
+        <div class="pt-4">
+            <a href="{% url 'quizselect' %}" class="inline-flex items-center space-x-2 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white font-bold text-sm rounded-xl shadow-md transition transform active:scale-95">
+                <i class="fa-solid fa-house text-xs"></i>
+                <span>Return to Hub</span>
+            </a>
+        </div>
+    </section>
+</div>
+
+{{ quiz_cards|json_script:"quiz-payload-data" }}
+{{ duration|json_script:"duration-payload-data" }}
+
+<script>
+    const rawCards = JSON.parse(document.getElementById('quiz-payload-data').textContent);
+    const sessionDurationMinutes = JSON.parse(document.getElementById('duration-payload-data').textContent) || 10;
+
+    const quizWindow = document.getElementById('quizWindow');
+    const resultsWindow = document.getElementById('resultsWindow');
+    const cardTracker = document.getElementById('cardNumberTracker');
+    const questionText = document.getElementById('currentQuestionText');
+    const answerWrapper = document.getElementById('answerOptionsWrapper');
+    const actionBtn = document.getElementById('actionControlBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const scoreBadge = document.getElementById('scoreTrackerIndicator');
+    const timerDisplay = document.getElementById('countdownTimer');
+    const overrideWrapper = document.getElementById('overrideWrapper');
+    const overrideBtn = document.getElementById('overrideBtn');
+
+    let currentIdx = 0;
+    let scoreCount = 0;
+    let isEvaluatedState = false;
+    let currentCardWasOverridden = false;
+
+    let targetTimeSeconds = sessionDurationMinutes * 60;
+    const intervalTimerInstance = setInterval(() => {
+        const mins = Math.floor(targetTimeSeconds / 60);
+        const secs = targetTimeSeconds % 60;
+        timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        if (targetTimeSeconds <= 0) { terminateSessionAndRenderResults(); }
+        targetTimeSeconds--;
+    }, 1000);
+
+    function populateCardWindow(index) {
+        if (index >= rawCards.length) {
+            terminateSessionAndRenderResults();
+            return;
+        }
+
+        isEvaluatedState = false;
+        currentCardWasOverridden = false;
+        scoreBadge.classList.add('hidden');
+        overrideWrapper.classList.add('hidden');
+        actionBtn.textContent = "Check Answer";
+        actionBtn.className = "px-8 py-3 bg-[#607A66] text-white font-bold text-sm rounded-xl shadow-md";
+        
+        cardTracker.textContent = `Question ${index + 1} of ${rawCards.length}`;
+        
+        const card = rawCards[index];
+        questionText.textContent = card.question;
+        answerWrapper.innerHTML = '';
+
+        if (card.type === 'written') {
+            const textarea = document.createElement('textarea');
+            textarea.id = "writtenUserResponseField";
+            textarea.rows = 3;
+            textarea.placeholder = "Type your response here...";
+            textarea.className = "w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-500 transition resize-none";
+            answerWrapper.appendChild(textarea);
+        } else if (card.type === 'allthatapply') {
+            card.options.forEach(opt => {
+                createCheckboxOptionRow(opt);
+            });
+        } else {
+            card.options.forEach(opt => {
+                createRadioOptionRow(opt);
+            });
+        }
+    }
+
+    function createRadioOptionRow(text) {
+        const label = document.createElement('label');
+        label.className = "flex items-center space-x-3 p-3.5 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition";
+        label.innerHTML = `
+            <input type="radio" name="activeQuizGroup" value="${text}" class="w-4 h-4 text-blue-600 focus:ring-0">
+            <span class="text-sm font-semibold text-gray-700">${text}</span>
+        `;
+        answerWrapper.appendChild(label);
+    }
+
+    function createCheckboxOptionRow(text) {
+        const label = document.createElement('label');
+        label.className = "flex items-center space-x-3 p-3.5 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition";
+        label.innerHTML = `
+            <input type="checkbox" name="activeQuizGroup" value="${text}" class="w-4 h-4 text-blue-600 rounded focus:ring-0">
+            <span class="text-sm font-semibold text-gray-700">${text}</span>
+        `;
+        answerWrapper.appendChild(label);
+    }
+
+    function handleActiveFieldValidation() {
+        const card = rawCards[currentIdx];
+        let isCorrect = false;
+        let userAnswers = [];
+
+        if (card.type === 'written') {
+            const val = document.getElementById('writtenUserResponseField').value.trim();
+            if (!val) return;
+            userAnswers.push(val);
+            isCorrect = val.toLowerCase() === card.answer.toLowerCase();
+        } else if (card.type === 'allthatapply') {
+            const checked = document.querySelectorAll('input[name="activeQuizGroup"]:checked');
+            checked.forEach(c => userAnswers.push(c.value.trim().toLowerCase()));
+            
+            const cleanCorrectAnswers = card.answer.split(',').map(a => a.trim().toLowerCase());
+            isCorrect = userAnswers.length === cleanCorrectAnswers.length && userAnswers.every(val => cleanCorrectAnswers.includes(val));
+        } else {
+            const checked = document.querySelector('input[name="activeQuizGroup"]:checked');
+            if (!checked) return;
+            isCorrect = checked.value.trim().toLowerCase() === card.answer.trim().toLowerCase();
+        }
+
+        isEvaluatedState = true;
+
+        if (isCorrect) {
+            scoreCount++;
+            scoreBadge.textContent = "Correct!";
+            scoreBadge.className = "text-xs font-black text-white bg-emerald-500 border border-emerald-600 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm";
+        } else {
+            scoreBadge.textContent = "Incorrect";
+            scoreBadge.className = "text-xs font-black text-white bg-rose-500 border border-rose-600 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm";
+            
+            if (card.type === 'written') {
+                overrideWrapper.classList.remove('hidden');
+            }
+        }
+        scoreBadge.classList.remove('hidden');
+
+        const reveal = document.createElement('div');
+        reveal.className = "p-4 border text-xs font-medium rounded-xl bg-gray-50 border-gray-200 text-gray-700 mt-4 shadow-inner";
+        reveal.innerHTML = `<strong>Correct Key:</strong> <span class="text-emerald-700 font-semibold">${card.answer}</span>`;
+        answerWrapper.appendChild(reveal);
+
+        document.querySelectorAll('input[name="activeQuizGroup"]').forEach(i => i.disabled = true);
+
+        actionBtn.textContent = "Continue Next";
+        actionBtn.className = "px-8 py-3 bg-blue-600 text-white font-bold text-sm rounded-xl shadow-md";
+    }
+
+    overrideBtn.addEventListener('click', () => {
+        if (!currentCardWasOverridden) {
+            scoreCount++;
+            currentCardWasOverridden = true;
+            scoreBadge.textContent = "Correct (Overridden)";
+            scoreBadge.className = "text-xs font-black text-white bg-blue-500 border border-blue-600 px-3 py-1 rounded-full uppercase tracking-wider shadow-sm";
+            overrideWrapper.classList.add('hidden');
+        }
+    });
+
+    actionBtn.addEventListener('click', () => {
+        if (!isEvaluatedState) {
+            handleActiveFieldValidation();
+        } else {
+            currentIdx++;
+            populateCardWindow(currentIdx);
+        }
+    });
+
+    skipBtn.addEventListener('click', () => {
+        currentIdx++;
+        populateCardWindow(currentIdx);
+    });
+
+    function terminateSessionAndRenderResults() {
+        clearInterval(intervalTimerInstance);
+        quizWindow.classList.add('hidden');
+        resultsWindow.classList.remove('hidden');
+        document.getElementById('finalScoreRatio').textContent = `${scoreCount} / ${rawCards.length}`;
+        const pct = rawCards.length > 0 ? Math.round((scoreCount / rawCards.length) * 100) : 0;
+        document.getElementById('finalAccuracyPercent').textContent = `${pct}%`;
+    }
+
+    populateCardWindow(currentIdx);
+</script>
+{% endblock %}

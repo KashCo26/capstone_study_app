@@ -75,7 +75,6 @@
 <script src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
 
 <script>
-    // Register structural components
     Quill.register('modules/imageResize', ImageResize.default);
 
     const quill = new Quill('#editor', {
@@ -92,7 +91,6 @@
         }
     });
 
-    // Format boundaries
     const toolbar = document.querySelector('.ql-toolbar');
     const container = document.querySelector('.ql-container');
     if(toolbar && container) {
@@ -101,12 +99,9 @@
         container.style.border = 'none';
     }
 
-    // Capture submissions to compile update parameters
     document.getElementById('editNoteForm').addEventListener('submit', function(event) {
-        // Extract the editor payload
         const richContent = quill.root.innerHTML;
         
-        // Pass contents to hidden variable right before form leaves page
         document.getElementById('note_text_hidden').value = richContent;
     });
 </script>
