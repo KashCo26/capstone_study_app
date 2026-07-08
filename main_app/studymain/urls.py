@@ -12,5 +12,6 @@ urlpatterns = [
     path('createquiz/', views.new_quiz, name='createquiz'),
     path('viewquizzes/', views.see_quiz, name='viewquizzes'),
     path('editquiz/<str:quiz_id>/', views.quiz_edit, name='editquiz'),
-    path('takequiz/<str:set_id>/', views.take_quiz_view, name='flashcard-practice')
+    path('takequiz/<str:set_id>/', views.take_quiz_view, name='flashcard-practice'),
+    path('flashcard_summary/<str:set_id>/', views.flashcard_summary_view, name='flashcard-summary')
 ]

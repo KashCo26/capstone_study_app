@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Take AI Quiz - StudyApp{% endblock %}
+{% block title %}Take Quiz - StudyApp{% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto py-8 px-4 font-sans">
@@ -8,7 +8,7 @@
         <span class="text-lg font-black text-gray-900 tracking-tight">StudyApp <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold ml-1 uppercase tracking-wide">AI Powered</span></span>
         <div class="flex items-center space-x-2 text-sm font-semibold text-gray-600 bg-gray-100 px-3 py-1.5 rounded-xl">
             <i class="fa-solid fa-clock text-emerald-500"></i>
-            <span>Time left: <span class="font-mono font-bold text-gray-950">14:59</span></span>
+            <span>Time left: <span id="quiz-timer" class="font-mono font-bold text-gray-950">15:00</span></span>
         </div>
     </div>
 
@@ -65,11 +65,43 @@
                 "id": "{{ card.id }}", 
                 "front": "{{ card.front|escapejs }}",
                 "back": "{{ card.back|escapejs }}",
-                // Remove the wrapping quotes and use the safe filter to output a real JS array
                 "ai_distractors": {% if card.ai_distractors %}{{ card.ai_distractors|safe }}{% else %}[]{% endif %}
             }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ];
+
+    let totalTimeInSeconds = 15 * 60; 
+    let timerInterval;
+
+    function startTimer() {
+        const timerDisplay = document.getElementById('quiz-timer');
+        
+        timerInterval = setInterval(() => {
+            let minutes = Math.floor(totalTimeInSeconds / 60);
+            let seconds = totalTimeInSeconds % 60;
+
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            timerDisplay.innerText = `${minutes}:${seconds}`;
+
+            if (totalTimeInSeconds <= 0) {
+                clearInterval(timerInterval);
+                handleTimeExpired();
+            } else {
+                totalTimeInSeconds--;
+            }
+        }, 1000);
+    }
+
+    function handleTimeExpired() {
+        alert("⏱️ Time's up! The session has expired.");
+        window.location.href = `/flashcard_summary/${encodeURIComponent({{ set_id }})}/?correct=${correctCount}&wrong=${wrongCount}`;
+    }
+
+    function stopTimerInstance() {
+        clearInterval(timerInterval);
+    }
 
     let currentQuestionIndex = 0;
     let isShowingFeedback = false; 
@@ -118,6 +150,9 @@
         document.getElementById('progress-bar').style.width = `${completionPercentage}%`;
     }
 
+    var correctCount = 0;
+    var wrongCount = 0;
+    
     function handleFormAction(event) {
         event.preventDefault();
         const currentCard = cardsArray[currentQuestionIndex];
@@ -135,10 +170,12 @@
                 feedbackBanner.className = "p-4 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-800 font-bold block";
                 feedbackMessage.innerText = "✓ Correct Answer!";
                 correctAnswerReveal.innerText = "";
+                correctCount++;
             } else {
                 feedbackBanner.className = "p-4 rounded-xl border bg-red-50 border-red-200 text-red-800 font-bold block";
                 feedbackMessage.innerText = "✕ Incorrect Option Selected.";
                 correctAnswerReveal.innerText = `Correct Target: ${currentCard.back}`;
+                wrongCount++;
             }
 
             document.querySelectorAll('input[name="quiz_choice"]').forEach(el => el.disabled = true);
@@ -158,13 +195,12 @@
         document.getElementById('progress-text').innerText = `100% Completed`;
         document.getElementById('progress-bar').style.width = `100%`;
         alert("Quiz finished! Great job tracking your target study metrics.");
-        window.location.search = '';
+        window.location.href = `/flashcard_summary/${encodeURIComponent({{ set_id }})}/?correct=${correctCount}&wrong=${wrongCount}`;
     }
 
     function handleEndSession() {
-        if (confirm("Are you sure you want to end this session early? Your progress will not be saved.")) {
-            window.location.search = '';
-        }
+        if (confirm("Are you sure you want to end this session early? Your progress will not be saved."))
+        window.location.href = `/flashcard_summary/${encodeURIComponent({{ set_id }})}/?correct=${correctCount}&wrong=${wrongCount}`;
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -172,7 +208,9 @@
             document.getElementById('current-question-text').innerText = "No study cards loaded into session pipeline.";
         } else {
             renderQuestion();
+            startTimer();
         }
     });
 </script>
+
 {% endblock %}

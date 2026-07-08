@@ -304,4 +304,37 @@ def take_quiz_view(request, set_id):
             'ai_distractors': distractors_list[:3]
         })
         
-    return render(request, 'practice_cards.html', {'cards': processed_cards})
+    return render(request, 'practice_cards.html', {'cards': processed_cards, 'set_id': set_id})
+
+def flashcard_summary_view(request, set_id):
+    study_set = get_object_or_404(StudySet, id=set_id)
+    cards = study_set.cards.all()
+    
+    raw_correct = request.GET.get('correct', 0)
+    raw_wrong = request.GET.get('wrong', 0)
+
+    if '${' in raw_correct or not raw_correct.isdigit():
+        raw_correct = 0
+    if '${' in raw_wrong or not raw_wrong.isdigit():
+        raw_wrong = 0
+        
+    total_correct = int(raw_correct)
+    total_wrong = int(raw_wrong)
+    
+    total_questions = total_correct + total_wrong
+    if total_questions > 0:
+        average_score = round((total_correct / total_questions) * 100)
+    else:
+        average_score = 0
+
+    context = {
+        'total_correct': total_correct,
+        'total_wrong': total_wrong,
+        'average_score': average_score, 
+    }
+
+    return render(request, 'flashcard_summary.html', {
+        'study_set': study_set,
+        'cards': cards,
+        'context': context
+    })

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Progress Review - StudyApp{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-6 font-sans">
+    
+    <div class="mb-8 flex justify-between items-center px-2">
+        <span class="text-xl font-black text-gray-900 tracking-tight">
+            StudyApp 
+            <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold ml-1 uppercase tracking-wide">
+                Analytics
+            </span>
+        </span>
+        <span class="text-sm font-semibold text-gray-500">Session Completed</span>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm relative overflow-hidden">
+        
+        <div class="text-center pb-6 border-b border-gray-100">
+            <h2 class="text-2xl font-black text-gray-900 tracking-tight">Progress Review</h2>
+            <p class="text-sm text-gray-400 font-medium mt-1">Here is a summary of your performance metrics from this study session pipeline.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 py-8 items-center">
+            
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Session Performance</h3>
+                
+                <div class="flex items-center justify-between p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-white">
+                            <i class="fa-solid fa-circle-check text-sm"></i>
+                        </div>
+                        <span class="text-sm font-bold text-gray-750">Questions Right</span>
+                    </div>
+                    <span class="font-mono text-xl font-black text-emerald-700">{{ context.total_correct }}</span>
+                </div>
+
+                <div class="flex items-center justify-between p-4 bg-red-50/50 border border-red-100 rounded-2xl">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-xl bg-red-500 flex items-center justify-center text-white">
+                            <i class="fa-solid fa-circle-xmark text-sm"></i>
+                        </div>
+                        <span class="text-sm font-bold text-gray-750">Questions Wrong</span>
+                    </div>
+                    <span class="font-mono text-xl font-black text-red-700">{{ context.total_wrong }}</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center border-t md:border-t-0 md:border-l border-gray-100 pt-6 md:pt-0 md:pl-8">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Overall Score Metric</span>
+                
+                <div class="relative w-40 h-40 flex items-center justify-center">
+                    
+                    <svg class="absolute w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle 
+                            cx="50" 
+                            cy="50" 
+                            r="44" 
+                            stroke="#f3f4f6" 
+                            stroke-width="6" 
+                            fill="transparent"
+                        />
+                        <circle 
+                            cx="50" 
+                            cy="50" 
+                            r="44" 
+                            stroke="#10b981" 
+                            stroke-width="6" 
+                            fill="transparent"
+                            stroke-dasharray="276.46"
+                            style="stroke-dashoffset: calc(276.46 - (276.46 * {{ context.average_score }}) / 100);"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+
+                    <div class="text-center z-10 w-32 h-32 rounded-full flex flex-col items-center justify-center bg-gray-50/50 shadow-inner">
+                        <span class="block text-4xl font-black text-gray-950 font-mono tracking-tight">
+                            {{ context.average_score }}%
+                        </span>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Average</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="pt-6 border-t border-gray-100 flex justify-center">
+            <a href="{% url 'viewquizzes' %}" 
+               class="px-10 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow-md shadow-emerald-500/20 tracking-wider uppercase transition transform active:scale-98 flex items-center space-x-2">
+                <i class="fa-solid fa-rotate-right text-xs"></i>
+                <span>Practice More?</span>
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

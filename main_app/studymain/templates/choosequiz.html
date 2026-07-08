@@ -116,7 +116,6 @@
 </div>
 
 <script>
-    // Retain settings state directly via standard query parsing parameters on document evaluation
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const selectedFolder = urlParams.get('selected_folder');
@@ -125,7 +124,6 @@
         }
     });
 
-    // Dynamic Form Query submission to reload available array models
     function handleFolderSelect() {
         const folderSelector = document.getElementById("folder-select");
         const selectedValue = folderSelector.value;
@@ -137,7 +135,6 @@
         }
     }
 
-    // Toggle logic for checking all sub-notes items globally 
     function toggleSelectAll(masterCheckbox) {
         const noteCheckboxes = document.querySelectorAll('input[name="selected_notes"]');
         noteCheckboxes.forEach(checkbox => {
@@ -145,7 +142,6 @@
         });
     }
 
-    // Self-monitoring check condition status for synchronization
     function handleNoteCheck() {
         const masterCheckbox = document.getElementById('select-all-notes');
         const noteCheckboxes = document.querySelectorAll('input[name="selected_notes"]');
