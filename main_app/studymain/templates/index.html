@@ -1,26 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Website Title</title>
+{% extends 'base.html' %}
+{% block title %}Home - StudyApp{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 font-sans">
     
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+            Welcome to Your Study Dashboard
+        </h1>
+        <p class="text-base text-gray-500 mt-2 max-w-md mx-auto">
+            What are we focusing on today? Pick an action below to jump right back into your workflow.
+        </p>
+    </div>
 
-    <header>
-        <h1>Welcome to My Website</h1>
-    </header>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        
+        <a href="{% url 'quizselect' %}" class="group block bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm hover:border-purple-300 hover:shadow-md hover:shadow-purple-500/5 transition-all duration-200">
+            <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition duration-200">
+                <i class="fa-solid fa-graduation-cap text-xl"></i>
+            </div>
+            <span class="block text-lg font-bold text-gray-800 mb-1">Do a Lesson</span>
+            <p class="text-xs text-gray-400">Review generated sets and step through flashcards.</p>
+        </a>
 
-    <main>
-        <p>This is the main entry page of your application. Replace this text with your own content!</p>
-    </main>
+        <a href="{% url 'folders' %}" class="group block bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm hover:border-blue-300 hover:shadow-md hover:shadow-blue-500/5 transition-all duration-200">
+            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition duration-200">
+                <i class="fa-solid fa-folder-open text-xl"></i>
+            </div>
+            <span class="block text-lg font-bold text-gray-800 mb-1">View Folders</span>
+            <p class="text-xs text-gray-400">Organize subjects, topics, and write study notes.</p>
+        </a>
 
-    <footer>
-        <p>&copy; 2026 My Website</p>
-    </footer>
+        <a href="{% url 'createquiz' %}" class="group block bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm hover:border-emerald-300 hover:shadow-md hover:shadow-emerald-500/5 transition-all duration-200">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition duration-200">
+                <i class="fa-solid fa-square-plus text-xl"></i>
+            </div>
+            <span class="block text-lg font-bold text-gray-800 mb-1">Make a Quiz</span>
+            <p class="text-xs text-gray-400">Build manual study flashcards or draft with AI.</p>
+        </a>
 
-    <script src="script.js"></script>
-</body>
-</html>
+    </div>
+</div>
+{% endblock %}
