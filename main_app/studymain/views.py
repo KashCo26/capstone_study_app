@@ -3,7 +3,7 @@ from .models import Folder, Notes, Flashcard, StudySet
 
 # Create your views here.
 def home_screen(request):
-    return render(request, 'index.html')
+    return render(request, 'homescreen.html')
 
 def study_folders(request):
     folders = Folder.objects.all()
