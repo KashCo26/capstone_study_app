@@ -1,4 +1,6 @@
-from django.urls import path
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 
 # Define a list of url patterns
@@ -14,5 +16,11 @@ urlpatterns = [
     path('viewquizzes/', views.see_quiz, name='viewquizzes'),
     path('editquiz/<str:quiz_id>/', views.quiz_edit, name='editquiz'),
     path('takequiz/<str:set_id>/', views.take_quiz_view, name='flashcard-practice'),
-    path('flashcard_summary/<str:set_id>/', views.flashcard_summary_view, name='flashcard-summary')
+    path('flashcard_summary/<str:set_id>/', views.flashcard_summary_view, name='flashcard-summary'),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('settings/', views.settings_view, name='settings'),
+    path('register/', views.register_view, name='register')
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

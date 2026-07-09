@@ -1,12 +1,98 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.models import User
+import base64
+from django.core.files.base import ContentFile
 from .models import Folder, Notes, Flashcard, StudySet
 
 # Create your views here.
+@login_required
+def settings_view(request):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'update_profile':
+            username = request.POST.get('username', '').strip()
+            email = request.POST.get('email', '').strip()
+            cropped_data = request.POST.get('cropped_avatar_data', '')
+
+            if username and email:
+                request.user.username = username
+                request.user.email = email
+                request.user.save()
+
+                if cropped_data.startswith('data:image'):
+                    img_format, imgstr = cropped_data.split(';base64,')
+                    ext = img_format.split('/')[-1]
+                    data = ContentFile(base64.b64decode(imgstr), name=f"{request.user.username}_avatar.{ext}")
+                    
+                    profile = request.user.profile
+                    profile.image = data
+                    profile.save()
+
+                messages.success(request, 'Profile details and email updated successfully!')
+            else:
+                messages.error(request, 'Username and Email fields cannot be blank.')
+
+        elif action == 'update_password':
+            old_pass = request.POST.get('old_password', '')
+            new_pass1 = request.POST.get('new_password1', '')
+            new_pass2 = request.POST.get('new_password2', '')
+
+            if not request.user.check_password(old_pass):
+                messages.error(request, 'Your current password choice was entered incorrectly.')
+            elif new_pass1 != new_pass2:
+                messages.error(request, 'The new passwords do not match.')
+            else:
+                request.user.set_password(new_pass1)
+                request.user.save()
+                update_session_auth_hash(request, request.user)
+                messages.success(request, 'Your password security profile keys have been updated successfully!')
+
+        return redirect('settings')
+
+    return render(request, 'settings.html')
+
+def register_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password1 = request.POST.get('password1', '')
+        password2 = request.POST.get('password2', '')
+
+        if not username or not email or not password1 or not password2:
+            messages.error(request, 'All fields are required.')
+            return redirect('register')
+
+        if password1 != password2:
+            messages.error(request, 'Passwords do not match.')
+            return redirect('register')
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists.')
+            return redirect('register')
+
+        User.objects.create_user(
+            username=username,
+            email=email,
+            password=password1
+        )
+        
+        messages.success(request, 'Account created successfully! You can now log in.')
+        return redirect('login')
+
+    return render(request, 'registration/register.html')
+
+@login_required
 def home_screen(request):
     return render(request, 'homescreen.html')
 
+@login_required
 def study_folders(request):
-    folders = Folder.objects.all()
+    folders = Folder.objects.filter(user=request.user)
     if request.method == 'POST':
         folder_name = request.POST.get('folder_name')
         folder_id = request.POST.get('folder_id')
@@ -14,28 +100,29 @@ def study_folders(request):
         deleted_folder_id = request.POST.get('deleted_folder')
         
         if folder_name:
-            Folder.objects.create(name=folder_name.strip())
+            Folder.objects.create(name=folder_name.strip(), user=request.user)
             return redirect('folders')
         
         elif folder_id and new_name:
-            folder = get_object_or_404(Folder, id=folder_id)
+            folder = get_object_or_404(Folder, id=folder_id, user=request.user)
             folder.name = new_name.strip()
             folder.save()
             return redirect('folders')
         
         elif deleted_folder_id:
-            notes = Notes.objects.all()
+            notes = Notes.objects.filter(user=request.user)
             for note in notes:
                 if note.folder == deleted_folder_id:
                     note.delete()
-            del_folder = get_object_or_404(Folder, id=deleted_folder_id)
+            del_folder = get_object_or_404(Folder, id=deleted_folder_id, user=request.user)
             del_folder.delete()
             return redirect('folders')
         
     return render(request, 'folders.html', {'folders': folders})
 
+@login_required
 def create_note(request):
-    folders = Folder.objects.all()
+    folders = Folder.objects.filter(user=request.user)
     if request.method == 'POST':
         note_name = request.POST.get('note_name')
         note_text = request.POST.get('note_text')
@@ -48,6 +135,7 @@ def create_note(request):
             return redirect('folders')
     return render(request, 'newnote.html', {'folders': folders})
 
+@login_required
 def display_notes(request, folder_name):
     notes_match = None
     
@@ -77,8 +165,9 @@ def display_notes(request, folder_name):
         'searched_folder': folder_name
     })
     
+@login_required
 def show_note(request, note_name):
-    folders = Folder.objects.all()
+    folders = Folder.objects.filter(user=request.user)
     note = get_object_or_404(Notes, name=note_name)
     new_name = request.POST.get('note_name')
     new_text = request.POST.get('note_text')
@@ -99,21 +188,23 @@ def show_note(request, note_name):
         'chosen_folder_name': note.folder.name
     })
     
+@login_required
 def quiz_options(request):
-    folders = Folder.objects.all()
+    folders = Folder.objects.filter(user=request.user)
     notes = None
     folder_id = request.GET.get('selected_folder')
     
     if folder_id:
         notes = Notes.objects.filter(folder_id=folder_id)
     else:
-        notes = Notes.objects.all()
+        notes = Notes.objects.filter(user=request.user)
     
     return render(request, 'choosequiz.html', {
         'folders': folders,
         'notes': notes,
     })
-    
+
+@login_required  
 def generate_quiz_session(request):
     if request.method != 'POST':
         return redirect('quiz_options')
@@ -145,7 +236,6 @@ def generate_quiz_session(request):
 
     client = OpenAI()
     
-    # 💡 UPDATED SCHEMA: Includes explicit types and choice options
     quiz_schema = {
         "type": "object",
         "properties": {
@@ -228,8 +318,9 @@ def generate_quiz_session(request):
     })
     
 
+@login_required
 def new_quiz(request):
-    folders = Folder.objects.all()
+    folders = Folder.objects.filter(user=request.user)
     notes = None
     folder_id = request.GET.get('folder_label')
     
@@ -301,9 +392,9 @@ def new_quiz(request):
                     
         
         if folder_id:
-            notes = Notes.objects.filter(folder_id=folder_id)
+            notes = Notes.objects.filter(folder_id=folder_id, user=request.user)
         else:
-            notes = Notes.objects.all()
+            notes = Notes.objects.filter(user=request.user)
         
         if set_name and questions and answers:    
             study_set = StudySet.objects.create(
@@ -332,10 +423,12 @@ def new_quiz(request):
         'notes': notes
         })
 
+@login_required
 def see_quiz(request):
-    study_sets = StudySet.objects.all().order_by('-created_at').prefetch_related('cards')
+    study_sets = StudySet.objects.filter(user=request.user).order_by('-created_at').prefetch_related('cards')
     return render(request, 'viewquizzes.html', {'study_sets': study_sets})
 
+@login_required
 def quiz_edit(request, quiz_id):
     study_set = get_object_or_404(StudySet, id=quiz_id)
         
@@ -389,6 +482,7 @@ def quiz_edit(request, quiz_id):
 import json
 from openai import OpenAI
 
+@login_required
 def take_quiz_view(request, set_id):
     client = OpenAI() 
     
@@ -483,6 +577,7 @@ def take_quiz_view(request, set_id):
         
     return render(request, 'practice_cards.html', {'cards': processed_cards, 'set_id': set_id})
 
+@login_required
 def flashcard_summary_view(request, set_id):
     study_set = get_object_or_404(StudySet, id=set_id)
     cards = study_set.cards.all()
