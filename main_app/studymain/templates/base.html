@@ -13,7 +13,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col font-sans text-gray-900">
 
-    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-[100]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 
@@ -48,7 +48,7 @@
                                 </button>
                             </div>
 
-                            <div id="profileDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg py-1 bg-white border border-gray-100 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="profileDropdownBtn">
+                            <div id="profileDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-xl shadow-lg py-1 bg-white border border-gray-100 ring-1 ring-black ring-opacity-5 focus:outline-none z-[100]" role="menu" aria-orientation="vertical" aria-labelledby="profileDropdownBtn">
                                 <div class="px-4 py-2 border-b border-gray-50">
                                     <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Signed in as</p>
                                     <p class="text-sm font-bold text-gray-700 truncate">{{ user.username }}</p>
@@ -101,7 +101,6 @@
         menuBtn.addEventListener('click', () => {
             const isHidden = mobileMenu.classList.toggle('hidden');
             
-            // Swap icons dynamically depending on layout status
             if (isHidden) {
                 menuIcon.className = "fa-solid fa-bars text-xl";
             } else {
@@ -113,13 +112,11 @@
         const profileMenu = document.getElementById('profileDropdownMenu');
 
         if (profileBtn && profileMenu) {
-            // Toggle user dropdown on click
             profileBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 profileMenu.classList.toggle('hidden');
             });
 
-            // Close dropdown when clicking anywhere else on the page
             document.addEventListener('click', (e) => {
                 if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
                     profileMenu.classList.add('hidden');

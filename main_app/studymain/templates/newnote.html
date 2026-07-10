@@ -77,18 +77,18 @@
 <script src="https://cdn.jsdelivr.net/npm/quill-image-resize-module@3.0.0/image-resize.min.js"></script>
 
 <script>
-    // Register the image resize module with the core Quill library
     Quill.register('modules/imageResize', ImageResize.default);
 
     const quill = new Quill('#editor', {
         theme: 'snow',
         placeholder: 'Start typing your study notes here...',
         modules: {
+            // 💡 Added 'underline' and '{'list': 'bullet'}' parameters inside toolbar object configurations
             toolbar: [
-                ['bold', 'italic'],
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'bullet' }],
                 ['image']
             ],
-            // Activated the interactivity module layer
             imageResize: {
                 modules: [ 'Resize', 'DisplaySize', 'Toolbar' ]
             }
@@ -121,7 +121,6 @@
         }
     });
 
-    // Add an event handler to check image size when inserted
     quill.getModule('toolbar').addHandler('image', () => {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');

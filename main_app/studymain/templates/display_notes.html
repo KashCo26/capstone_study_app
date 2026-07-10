@@ -27,7 +27,7 @@
                         {{ note.name }}
                     </h3>
                     <p class="text-sm text-gray-650 leading-relaxed mb-5">
-                        {{ note.text|truncatechars:20 }}
+                        {{ note.text|striptags|truncatechars:40 }}
                     </p> 
                     <small class="block text-xs font-medium text-gray-400 border-t border-gray-100 pt-3 mt-auto">
                         Created: {{ note.created_at|date:"m-d-Y" }}

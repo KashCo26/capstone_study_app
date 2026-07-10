@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 import base64
 from django.core.files.base import ContentFile
 from .models import Folder, Notes, Flashcard, StudySet
+import json
+from openai import OpenAI
 
 # Create your views here.
 @login_required
@@ -432,57 +434,141 @@ def see_quiz(request):
 @login_required
 def quiz_edit(request, quiz_id):
     study_set = get_object_or_404(StudySet, id=quiz_id, user=request.user)
+    saved_card_ids = []
+    flashcards_to_create = []
         
     if request.method == 'POST':
         new_name = request.POST.get('set_name')
         form_ids = request.POST.getlist('card_id[]')
         new_questions = request.POST.getlist('question[]')
         new_answers = request.POST.getlist('answer[]')
+        action = request.POST.get('action')
         
         if new_name:
             study_set.name = new_name.strip()
-            study_set.save()
-            
-            saved_card_ids = []
-            flashcards_to_create = []
-            
+    
+        if action == 'generate_ai':
+            cards_list = []
             for c_id, q_text, a_text in zip(form_ids, new_questions, new_answers):
-                q_clean = q_text.strip()
-                a_clean = a_text.strip()
+                cards_list.append(
+                    Flashcard(
+                        id=int(c_id) if c_id is not None else None,
+                        front=q_text,
+                        back=a_text,
+                        study_set=study_set,
+                        user=request.user
+                    )
+                )
+
+            client = OpenAI()
+            prompt_material = f"Generate broad foundational quiz questions regarding this general topic: '{study_set.name}'"
+            
+            quiz_schema = {
+                "type": "object",
+                "properties": {
+                    "cards": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "question": {"type": "string"},
+                                "answer": {"type": "string"}
+                            },
+                            "required": ["question", "answer"],
+                            "additionalProperties": False
+                        }
+                    }
+                },
+                "required": ["cards"],
+                "additionalProperties": False
+            }
+            
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "You are a professional teacher assistant compiling study flashcard decks."},
+                        {"role": "user", "content": f"{prompt_material}\nGenerate exactly 5 comprehensive matching card items containing clear questions and concise answers."}
+                    ],
+                    response_format={
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": "quiz_set_generation",
+                            "strict": True,
+                            "schema": quiz_schema
+                        }
+                    }
+                )
+                ai_data = json.loads(response.choices[0].message.content)
+                generated_cards = ai_data.get('cards', [])
                 
-                if q_clean and a_clean:
-                    if c_id:
-                        Flashcard.objects.filter(id=c_id, study_set=study_set).update(
-                            front=q_clean,
-                            back=a_clean
-                        )
-                        saved_card_ids.append(int(c_id))
-                    else:
-                        flashcards_to_create.append(
+                for item in generated_cards:
+                    q_text = item.get('question', '').strip()
+                    a_text = item.get('answer', '').strip()
+                    if q_text and a_text:
+                        cards_list.append(
                             Flashcard(
                                 study_set=study_set,
-                                front=q_clean,
-                                back=a_clean,
+                                front=q_text,
+                                back=a_text,
                                 user=request.user
                             )
                         )
+                
+            except Exception as e:
+                print(f"AI Generation failed: {e}")
             
-            if flashcards_to_create:
-                new_cards = Flashcard.objects.bulk_create(flashcards_to_create)
-                saved_card_ids.extend([card.id for card in new_cards])
+            return render(request, 'editquiz.html', {
+                'study_set': study_set,
+                'cards': cards_list
+            })
             
-            study_set.cards.exclude(id__in=saved_card_ids).delete()
+        elif action == 'delete_set': 
+            cards = study_set.cards.all()
+            for card in cards:
+                card.delete()
+            study_set.delete()
             
             return redirect('viewquizzes')
+        
+        else:
+            if new_name:
+                study_set.save()
+                
+                for c_id, q_text, a_text in zip(form_ids, new_questions, new_answers):
+                    q_clean = q_text.strip()
+                    a_clean = a_text.strip()
+                    
+                    if q_clean and a_clean:
+                        if c_id:
+                            Flashcard.objects.filter(id=c_id, study_set=study_set).update(
+                                front=q_clean,
+                                back=a_clean
+                            )
+                            saved_card_ids.append(int(c_id))
+                        else:
+                            flashcards_to_create.append(
+                                Flashcard(
+                                    study_set=study_set,
+                                    front=q_clean,
+                                    back=a_clean,
+                                    user=request.user
+                                )
+                            )
+                
+                if flashcards_to_create:
+                    new_cards = Flashcard.objects.bulk_create(flashcards_to_create)
+                    saved_card_ids.extend([card.id for card in new_cards])
+                
+                study_set.cards.exclude(id__in=saved_card_ids).delete()
+                
+                return redirect('viewquizzes')
             
     cards = study_set.cards.all()
     return render(request, 'editquiz.html', {
         'study_set': study_set,
         'cards': cards
     })
-
-import json
-from openai import OpenAI
 
 @login_required
 def take_quiz_view(request, set_id):
