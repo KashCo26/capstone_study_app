@@ -131,7 +131,7 @@ def create_note(request):
         if folder_id:
             chosen_folder = Folder.objects.get(id=folder_id)
         if note_name and note_text and chosen_folder:
-            Notes.objects.create(name=note_name, text=note_text, folder=chosen_folder)
+            Notes.objects.create(name=note_name, text=note_text, folder=chosen_folder, user=request.user)
             return redirect('folders')
     return render(request, 'newnote.html', {'folders': folders})
 
@@ -140,9 +140,9 @@ def display_notes(request, folder_name):
     notes_match = None
     
     if folder_name:
-        notes_match = Notes.objects.filter(folder__name__iexact=folder_name)
+        notes_match = Notes.objects.filter(folder__name__iexact=folder_name, user=request.user)
     else:
-        notes_match = Notes.objects.filter(folder__name__iexact=folder_name)
+        notes_match = Notes.objects.filter(folder__name__iexact=folder_name, user=request.user)
         
     if request.method == 'POST':
         note_id = request.POST.get('note_id')
@@ -150,13 +150,13 @@ def display_notes(request, folder_name):
         deleted_note_id = request.POST.get('deleted_note')
         
         if note_id and new_name:
-            note = get_object_or_404(Notes, id=note_id)
+            note = get_object_or_404(Notes, id=note_id, user=request.user)
             note.name = new_name.strip()
             note.save()
             return redirect(f'/viewnotes/{folder_name}/')
         
         elif deleted_note_id:
-            del_note = get_object_or_404(Notes, id=deleted_note_id)
+            del_note = get_object_or_404(Notes, id=deleted_note_id, user=request.user)
             del_note.delete()
             return redirect(f'/viewnotes/{folder_name}/')
         
@@ -168,7 +168,7 @@ def display_notes(request, folder_name):
 @login_required
 def show_note(request, note_name):
     folders = Folder.objects.filter(user=request.user)
-    note = get_object_or_404(Notes, name=note_name)
+    note = get_object_or_404(Notes, name=note_name, user=request.user)
     new_name = request.POST.get('note_name')
     new_text = request.POST.get('note_text')
     new_folder_id = request.POST.get('selected_folder')
@@ -195,7 +195,7 @@ def quiz_options(request):
     folder_id = request.GET.get('selected_folder')
     
     if folder_id:
-        notes = Notes.objects.filter(folder_id=folder_id)
+        notes = Notes.objects.filter(folder_id=folder_id, user=request.user)
     else:
         notes = Notes.objects.filter(user=request.user)
     
@@ -216,7 +216,7 @@ def generate_quiz_session(request):
     if not selected_note_ids:
         return redirect('quiz_options')
 
-    selected_notes_records = Notes.objects.filter(id__in=selected_note_ids)
+    selected_notes_records = Notes.objects.filter(id__in=selected_note_ids, user=request.user)
     combined_notes_text = ""
     for note in selected_notes_records:
         combined_notes_text += f"\n--- Section: {note.name} ---\n{note.text}\n"
@@ -336,7 +336,7 @@ def new_quiz(request):
             prompt_material = ""
             
             if note_id:
-                selected_note = get_object_or_404(Notes, id=note_id)
+                selected_note = get_object_or_404(Notes, id=note_id, user=request.user)
                 prompt_material = f"Generate questions based strictly on these notes:\n{selected_note.text}"
             else:
                 prompt_material = f"Generate broad foundational quiz questions regarding this general topic: '{set_name}'"
@@ -398,7 +398,7 @@ def new_quiz(request):
         
         if set_name and questions and answers:    
             study_set = StudySet.objects.create(
-                    name=set_name.strip()
+                    name=set_name.strip(), user=request.user
             )
                 
             flashcards_to_create = []
@@ -408,7 +408,8 @@ def new_quiz(request):
                         Flashcard(
                             study_set=study_set,
                             front=q_text.strip(),
-                            back=a_text.strip()
+                            back=a_text.strip(),
+                            user=request.user
                         )
                     )
                 
@@ -430,7 +431,7 @@ def see_quiz(request):
 
 @login_required
 def quiz_edit(request, quiz_id):
-    study_set = get_object_or_404(StudySet, id=quiz_id)
+    study_set = get_object_or_404(StudySet, id=quiz_id, user=request.user)
         
     if request.method == 'POST':
         new_name = request.POST.get('set_name')
@@ -461,7 +462,8 @@ def quiz_edit(request, quiz_id):
                             Flashcard(
                                 study_set=study_set,
                                 front=q_clean,
-                                back=a_clean
+                                back=a_clean,
+                                user=request.user
                             )
                         )
             
@@ -486,7 +488,7 @@ from openai import OpenAI
 def take_quiz_view(request, set_id):
     client = OpenAI() 
     
-    study_set = get_object_or_404(StudySet, id=set_id)
+    study_set = get_object_or_404(StudySet, id=set_id, user=request.user)
     raw_cards = study_set.cards.all()
     
     cards_input_data = []
@@ -579,7 +581,7 @@ def take_quiz_view(request, set_id):
 
 @login_required
 def flashcard_summary_view(request, set_id):
-    study_set = get_object_or_404(StudySet, id=set_id)
+    study_set = get_object_or_404(StudySet, id=set_id, user=request.user)
     cards = study_set.cards.all()
     
     raw_correct = request.GET.get('correct', 0)
