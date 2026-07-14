@@ -133,3 +133,5 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 LOGIN_REDIRECT_URL = 'home'
 
 LOGOUT_REDIRECT_URL = 'login'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

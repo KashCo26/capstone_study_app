@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -6,9 +7,12 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 import base64
 from django.core.files.base import ContentFile
+from httpx import request
 from .models import Folder, Notes, Flashcard, StudySet
 import json
 from openai import OpenAI
+import random
+from django.core.mail import send_mail
 
 # Create your views here.
 @login_required
@@ -53,10 +57,68 @@ def settings_view(request):
                 request.user.save()
                 update_session_auth_hash(request, request.user)
                 messages.success(request, 'Your password security profile keys have been updated successfully!')
+                
+        elif action == 'delete_account':
+            all_notes = Notes.objects.filter(user=request.user)
+            all_folders = Folder.objects.filter(user=request.user)
+            all_study_sets = StudySet.objects.filter(user=request.user)
+            all_flashcards = Flashcard.objects.filter(user=request.user)
+            
+            all_notes.delete()
+            all_folders.delete()
+            all_study_sets.delete()
+            all_flashcards.delete()
+            request.user.delete()
+            messages.success(request, 'Your account has been deleted successfully.')
+            return redirect('home')
 
         return redirect('settings')
 
     return render(request, 'settings.html')
+
+def password_reset_view(request):
+    verification_code = str(random.randint(100000, 900000))
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'send_code':
+            try:
+                email = request.POST.get('email')                
+                subject = 'Your StudyApp Password Reset Code'
+                message = f'Hello,\n\nYour security verification code is: {verification_code}\n\nIf you did not request this, please ignore this email.'
+                from_email = 'kashco26@gmail.com'
+                recipient_list = [email]
+                
+                send_mail(
+                    subject,
+                    message,
+                    from_email,
+                    recipient_list,
+                    fail_silently=False,
+                )
+                
+                return render(request, 'registration/password_reset.html', {'verification_code': verification_code})
+            
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': f'Failed to send code: {str(e)}'})
+        
+        elif action == 'reset':
+            entered_code = request.POST.get('entered_code')
+            if entered_code == verification_code:
+                email = request.POST.get('email')
+                new_password = request.POST.get('new_password')
+                
+                try:
+                    user = User.objects.get(email=email)
+                    user.set_password(new_password)
+                    user.save()
+                    messages.success(request, 'Your password has been reset successfully. You can now log in with your new password.')
+                    return redirect('login')
+                except User.DoesNotExist:
+                    messages.error(request, 'No account found with that email address.')
+    
+
+    return render(request, 'registration/password_reset.html', {'verification_code': verification_code})
 
 def register_view(request):
     if request.method == 'POST':
