@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 django = "*"
+django-tailwind = {extras = ["honcho", "cookiecutter", "reload"], version = "*"}
+django-user-agents = "*"
 
 [dev-packages]
 

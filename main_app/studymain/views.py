@@ -15,7 +15,7 @@ import random
 from django.core.mail import send_mail
 
 # Create your views here.
-@login_required
+# @login_required
 def settings_view(request):
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -150,12 +150,13 @@ def register_view(request):
 
     return render(request, 'registration/register.html')
 
-@login_required
+# @login_required
 def home_screen(request):
-    return render(request, 'homescreen.html')
+    return render(request, 'mobile/homescreen.html')
 
-@login_required
+# @login_required
 def study_folders(request):
+    request.user = User.objects.get(username='kashvig')
     folders = Folder.objects.filter(user=request.user)
     if request.method == 'POST':
         folder_name = request.POST.get('folder_name')
@@ -182,9 +183,9 @@ def study_folders(request):
             del_folder.delete()
             return redirect('folders')
         
-    return render(request, 'folders.html', {'folders': folders})
+    return render(request, 'mobile/folders.html', {'folders': folders})
 
-@login_required
+# # @login_required
 def create_note(request):
     folders = Folder.objects.filter(user=request.user)
     if request.method == 'POST':
@@ -199,7 +200,7 @@ def create_note(request):
             return redirect('folders')
     return render(request, 'newnote.html', {'folders': folders})
 
-@login_required
+# # @login_required
 def display_notes(request, folder_name):
     notes_match = None
     
@@ -229,7 +230,7 @@ def display_notes(request, folder_name):
         'searched_folder': folder_name
     })
     
-@login_required
+# # @login_required
 def show_note(request, note_name):
     folders = Folder.objects.filter(user=request.user)
     note = get_object_or_404(Notes, name=note_name, user=request.user)
@@ -252,7 +253,7 @@ def show_note(request, note_name):
         'chosen_folder_name': note.folder.name
     })
     
-@login_required
+# @login_required
 def quiz_options(request):
     folders = Folder.objects.filter(user=request.user)
     notes = None
@@ -268,7 +269,7 @@ def quiz_options(request):
         'notes': notes,
     })
 
-@login_required  
+# @login_required  
 def generate_quiz_session(request):
     if request.method != 'POST':
         return redirect('quiz_options')
@@ -382,7 +383,7 @@ def generate_quiz_session(request):
     })
     
 
-@login_required
+# @login_required
 def new_quiz(request):
     folders = Folder.objects.filter(user=request.user)
     notes = None
@@ -488,12 +489,12 @@ def new_quiz(request):
         'notes': notes
         })
 
-@login_required
+# @login_required
 def see_quiz(request):
     study_sets = StudySet.objects.filter(user=request.user).order_by('-created_at').prefetch_related('cards')
     return render(request, 'viewquizzes.html', {'study_sets': study_sets})
 
-@login_required
+# @login_required
 def quiz_edit(request, quiz_id):
     study_set = get_object_or_404(StudySet, id=quiz_id, user=request.user)
     saved_card_ids = []
@@ -632,7 +633,7 @@ def quiz_edit(request, quiz_id):
         'cards': cards
     })
 
-@login_required
+# @login_required
 def take_quiz_view(request, set_id):
     client = OpenAI() 
     
@@ -727,7 +728,7 @@ def take_quiz_view(request, set_id):
         
     return render(request, 'practice_cards.html', {'cards': processed_cards, 'set_id': set_id})
 
-@login_required
+# @login_required
 def flashcard_summary_view(request, set_id):
     study_set = get_object_or_404(StudySet, id=set_id, user=request.user)
     cards = study_set.cards.all()
