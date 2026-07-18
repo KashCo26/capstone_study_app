@@ -56,39 +56,74 @@
                 <h1 class="font-bold text-2xl tracking-tight leading-none">My Study Folders</h1>
                 <p class="text-primary text-sm font-medium mt-1">Organize your folders by topic.</p>
             </div>
+        </div>
             
-            <div class="notes-wrapper relative inline-block text-left">
-                <button class="btn btn-primary w-8 h-8 min-h-[2rem] bg-accent text-accent-content font-bold rounded-full text-lg flex items-center justify-center shadow-lg transition transform active:scale-95 focus:outline-none" 
-                    onclick="togglePopup()">
+        <div class="notes-wrapper relative inline-block text-left">
+            <details class="dropdown dropdown-end">
+                <summary class="btn btn-primary w-8 h-9 min-h-[2rem] font-bold rounded-full text-lg flex items-center justify-center list-none transition transform active:scale-95 select-none [&::-webkit-details-marker]:hidden">
                     +
-                </button>
-            </div>
-        
+                </summary>
 
-            <!--<div id="notesPopup" class="popup-menu hidden absolute right-0 mt-3 bg-white border border-gray-200 rounded-xl shadow-xl w-44 z-50 overflow-hidden divide-y divide-gray-100">
-                <a href="/newnote/" class="popup-item block px-4 py-3 text-xs font-bold text-gray-750 hover:bg-gray-50 transition">
-                    New Note
-                </a>
-                <a href="#" class="popup-item block px-4 py-3 text-xs font-bold text-gray-750 hover:bg-gray-50 transition" 
-                   onclick="openFolderModal(); toggleDropdown(); return false;">
-                    New Folder
-                </a>
-            </div>-->
+                <ul class="dropdown-content menu bg-base-100 rounded-xl shadow-2xl border border-base-300 z-50 w-40 p-0 mt-2 overflow-hidden divide-y divide-base-300" 
+                    style="position: fixed; right: 16px; left: auto;">
+                    <li>
+                        <a href="{% url 'newnote' %}" class="block px-4 py-3 text-xs font-bold text-base-content hover:bg-base-200 rounded-none">
+                            New Note
+                        </a>
+                    </li>
+                    <li>
+                        <button href="#" onclick="document.getElementById('folderModal').showModal();" class="block px-4 py-3 text-xs font-bold text-base-content hover:bg-base-200 rounded-none">
+                            New Folder
+                        </button>
+
+                        <dialog id="folderModal" class="modal modal-bottom sm:modal-middle backdrop:bg-black/50">
+    
+                            <div class="modal-box bg-base-100 p-6 rounded-2xl border border-base-300 max-w-sm w-11/12 mx-auto">
+                                
+                                <h3 class="font-bold text-lg text-base-content mb-4">Create New Folder</h3>
+                                
+                                <form method="POST" action="{% url 'folders' %}" class="space-y-4">
+                                    {% csrf_token %}
+                                    
+                                    <div>
+                                        <label class="label">
+                                            <span class="label-text font-semibold text-xs text-base-content/70">Folder Name</span>
+                                        </label>
+                                        <input type="text" name="folder_name" placeholder="e.g., Biology, Math..." class="input input-bordered w-full bg-base-200 text-base-content placeholder-base-content/40 focus:outline-none focus:border-primary" required />
+                                    </div>
+
+                                    <div class="flex justify-end gap-2 pt-2">
+                                        <button type="button" onclick="document.getElementById('folderModal').close();" class="btn btn-ghost btn-sm text-xs">
+                                            Cancel
+                                        </button>
+                                        <button type="submit" class="btn btn-primary btn-sm text-xs bg-accent border-0 text-accent-content">
+                                            Create
+                                        </button>
+                                    </div>
+                                </form>
+                                
+                            </div>
+                        </dialog>
+                    </li>
+                </ul>
+            </details>
         </div>
     </div>
 </div>
 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 mt-6">
     {% for folder in folders %}
         <div class="bg-base-100 rounded-lg shadow-md p-8 flex flex-col items-center justify-center text-center">
-            <i class="fas fa-folder text-md"></i>
-            <h3 class="font-bold text-md mb-2">{{ folder.name }}</h3>
-            <p class="text-gray-600 text-sm">{{ folder.description }}</p>
+            <a href="{% url 'viewnotes' folder.name %}">
+                <i class="fas fa-folder text-md"></i>
+                <h3 class="font-bold text-md mb-2">{{ folder.name|truncatechars:10 }}</h3>
+            </a>
         </div>
     {% empty %}
-        <div class="col-span-full text-center py-16 px-4 bg-white border-2 border-dashed border-gray-200 rounded-2xl">
-            <i class="fa-solid fa-folder-open text-4xl text-gray-200 mb-3 block"></i>
-            <p class="text-sm font-medium text-gray-500">No folders created yet. Start by creating one using the plus button above!</p>
+        <div class="col-span-full text-center py-16 px-4 bg-base-100 border-2 border-dashed border-gray-200 rounded-2xl">
+            <i class="fa-solid fa-folder-open text-4xl text-base-ctonten mb-3 block"></i>
+            <p class="text-sm font-medium text-base-content">No notes created yet. Start by creating one using the plus button above!</p>
         </div>
     {% endfor %}
+</div>
 
 {% endblock %}

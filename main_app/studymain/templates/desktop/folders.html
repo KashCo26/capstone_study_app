@@ -102,13 +102,11 @@
 </div>
 
 <script>
-    // Restored your original togglePopup script framework matching classList toggles
     function togglePopup() {
         var popup = document.getElementById("notesPopup");
         popup.classList.toggle("hidden");
     }
 
-    // Restored original toggleDropdown logic matching previous template declarations
     function toggleDropdown() {
         var dropdown = document.getElementById("notesPopup");
         dropdown.classList.toggle("hidden");
@@ -183,12 +181,10 @@
         targetMenu.classList.toggle("hidden");
     }
 
-    // Window global listeners monitoring clicks outside modal domains
     window.onclick = function(event) {
         const modal = document.getElementById("folderModal");
         const mainPopup = document.getElementById("notesPopup");
 
-        // Fixed match condition targeted precisely against your restored class rules
         if (!event.target.matches('.plus-btn')) {
             if (mainPopup) mainPopup.classList.add("hidden");
         }

@@ -1,0 +1,61 @@
+{% extends 'mobile/base.html' %}
+
+{% block content %}
+
+<form method = "POST">
+    {% csrf_token %}
+    <div class="space-y-3">
+        <input type="text" name="note_name" value="{{ searched_note }}" class="bg-ghost input input-bordered w-full bg-base-200 text-base-content placeholder-base-content/40 focus:outline-none focus:border-primary" required />
+        <div class="w-full">
+            <select name="selected_folder" class="select select-bordered w-full text-left bg-base-100 text-base-content focus:outline-none focus:border-primary">
+                
+                {% for folder in folders %}
+                    <option value="{{ folder.id }}" class="{% if folder.id == chosen_folder_id %}selected{% endif %}">{{ folder.name }}</option>
+                {% empty %}
+                    <option value="" disabled>No folders available. Create one first!</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="max-w-2xl mx-auto border border-base-200 rounded-2xl shadow-sm overflow-hidden bg-base-100">
+            <div class="p-6 bg-base-100">
+                <textarea 
+                    name="note_text" 
+                    rows="11" 
+                    placeholder="Start typing your study notes here..." 
+                    spellcheck="true"
+                    class="w-full h-5 resize-none bg-transparent placeholder:text-[#5C3A41]/40 text-base-content text-base focus:outline-none"
+                >{{ note_text }}</textarea>
+            </div>
+
+        </div>
+
+        <div class="flex justify-end items-center gap-3">
+            <a href="{% url 'folders' %}" class="inline-block">
+                <span class="px-5 py-2.5 bg-transparent text-sm font-bold text-base-content rounded-xl transition duration-150 cursor-pointer flex items-center justify-center h-10">
+                    Cancel
+                </span>
+            </a>
+            
+            <button type="submit" 
+                    class="px-8 py-2.5 btn btn-primary text-accent-content font-bold text-sm rounded-xl transition transform active:scale-95 duration-100 flex items-center justify-center h-10">
+                Save Note
+            </button>
+        </div>
+
+    <header class="fixed top-0 left-0 w-full z-50 bg-base-100/95 bg-base-100 border-b border-base-300 h-16 flex items-center justify-between px-8">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'viewnotes' chosen_folder_name %}" class="flex items-center gap-3">
+                <i class="fas fa-arrow-left text-lg"></i>
+                <h1 class="font-bold text-lg tracking-tight">Edit Note</h1>
+            </a>
+        </div>
+        
+        <button type = "submit" class="btn btn-primary mt-5">
+        ✓
+        </button>
+        
+    </header>
+</form>
+
+{% endblock %}

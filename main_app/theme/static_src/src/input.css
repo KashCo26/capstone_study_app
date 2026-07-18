@@ -1,9 +1,7 @@
 @import "tailwindcss";
 
-@source "../../../studymain/templates/**/*.html";
-
 @plugin "daisyui" {
-  themes: caramellatte, light, dark; 
+  themes: all; 
 }
 
 /**
@@ -13,3 +11,5 @@
   * If your final CSS file is not being updated after code changes, you may want to broaden or narrow
   * the scope of this path.
   */
+
+@source "../../../studymain/templates/**/*.html";

@@ -9,7 +9,6 @@
 </head>
 
 <body class="bg-base-200 text-base-content min-h-screen pb-20 relative">
-
     <header class="sticky top-0 z-40 w-full bg-base-100/95 bg-base-100 border-b border-base-300 h-16 flex items-center justify-between px-8">
         <div class="flex items-center space-x-8">
             <a class="flex items-center space-x-2 text-xl tracking-tight" href="{% url 'home' %}">
@@ -69,20 +68,19 @@
         {% endblock content %}
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 z-50 h-16 bg-base-100 border-t border-base-300 flex justify-around items-center px-8">
-    
+    <nav class="fixed bottom-0 left-0 right-0 z-50 h-16 bg-base-100 border-t border-base-300 flex justify-around items-center px-5">
         <a href="{% url 'home' %}" class="flex flex-col items-center justify-center text-base-content/60 gap-1 {% if request.resolver_match.url_name == 'home' %}text-primary{% else %}text-base-content/60{% endif %}">
             <i class="fas fa-home text-xl"></i>
             <span class="text-[10px] font-bold tracking-wider uppercase">Home</span>
         </a>
 
         <a href="{% url 'folders' %}" class="flex flex-col items-center justify-center text-base-content/60 gap-1 {% if request.resolver_match.url_name == 'folders' %}text-primary{% else %}text-base-content/60{% endif %}">
-            <i class="fas fa-book text-xl"></i>
+            <i class="fas fa-folder text-xl"></i>
             <span class="text-[10px] font-bold tracking-wider uppercase">Folders</span>
         </a>
         
         <a href="#" class="flex flex-col items-center justify-center text-base-content/60 gap-1">
-            <i class="fas fa-graduation-cap text-xl"></i>
+            <i class="fas fa-book text-xl"></i>
             <span class="text-[10px] font-bold tracking-wider uppercase">Lessons</span>
         </a>
         
@@ -90,12 +88,11 @@
             <i class="fas fa-pen-to-square text-xl"></i>
             <span class="text-[10px] font-bold tracking-wider uppercase">Quizzes</span>
         </a>
-        
+
         <a href="#" class="flex flex-col items-center justify-center text-base-content/60 gap-1">
             <i class="fas fa-trophy text-xl"></i>
             <span class="text-[10px] font-bold tracking-wider uppercase">Rank</span>
         </a>
-
     </nav>
 
 </body>

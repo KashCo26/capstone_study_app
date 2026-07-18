@@ -1,0 +1,40 @@
+{% extends 'mobile/base.html' %}
+
+{% block content %}
+
+<header class="fixed top-0 left-0 w-full z-50 bg-base-100 border-b border-base-300 h-16 flex items-center justify-between px-8">
+    <div class="flex items-center gap-3">
+        <a href="{% url 'folders' %}" class="flex items-center gap-3">
+            <i class="fas fa-arrow-left text-lg"></i>
+            <div class="flex flex-col">
+                <h1 class="font-bold text-lg tracking-tight">{{ searched_folder }}</h1>
+                <p class="text-sm">{{ num_notes }} Notes</p>
+            </div>
+        </a>
+    </div>
+    
+    <button class="btn btn-primary mt-5">
+    +
+    </button>
+</header>
+
+<div class="flex flex-col gap-3 mt-6">
+    {% for note in notes %}
+        <div class="bg-base-100 rounded-lg shadow-md p-5 flex flex-col">
+            <a href="{% url 'notecontent' note.name %}">
+                <h3 class="font-bold text-md mb-2">{{ note.name|truncatechars:20 }}</h3>
+                <p class="text-sm">{{ note.text|striptags|truncatechars:150 }}</p>
+                <div class="items-right justify-right text-right p-1">
+                    <small class="text-xs">Created: {{ note.created_at|date:"m-d-Y" }}</small>
+                </div>
+            </a>
+        </div>
+    {% empty %}
+        <div href="{% url 'notecontent' note.name %}" class="col-span-full text-center py-16 px-4 bg-base-100 border-2 border-dashed border-gray-200 rounded-2xl">
+            <i class="fa-solid fa-folder-open text-4xl text-base-content mb-3 block"></i>
+            <p class="text-sm font-medium text-base-content">No notes created yet. Start by creating one using the plus button above!</p>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

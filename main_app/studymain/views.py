@@ -185,8 +185,9 @@ def study_folders(request):
         
     return render(request, 'mobile/folders.html', {'folders': folders})
 
-# # @login_required
+# @login_required
 def create_note(request):
+    request.user = User.objects.get(username='kashvig')
     folders = Folder.objects.filter(user=request.user)
     if request.method == 'POST':
         note_name = request.POST.get('note_name')
@@ -198,16 +199,19 @@ def create_note(request):
         if note_name and note_text and chosen_folder:
             Notes.objects.create(name=note_name, text=note_text, folder=chosen_folder, user=request.user)
             return redirect('folders')
-    return render(request, 'newnote.html', {'folders': folders})
+    return render(request, 'mobile/newnote.html', {'folders': folders})
 
-# # @login_required
+# @login_required
 def display_notes(request, folder_name):
+    request.user = User.objects.get(username='kashvig')
     notes_match = None
     
     if folder_name:
         notes_match = Notes.objects.filter(folder__name__iexact=folder_name, user=request.user)
     else:
         notes_match = Notes.objects.filter(folder__name__iexact=folder_name, user=request.user)
+    
+    num_notes = len(notes_match)
         
     if request.method == 'POST':
         note_id = request.POST.get('note_id')
@@ -225,12 +229,13 @@ def display_notes(request, folder_name):
             del_note.delete()
             return redirect(f'/viewnotes/{folder_name}/')
         
-    return render(request, 'display_notes.html', {
+    return render(request, 'mobile/display_notes.html', {
         'notes': notes_match,
-        'searched_folder': folder_name
+        'searched_folder': folder_name,
+        'num_notes': num_notes
     })
     
-# # @login_required
+# @login_required
 def show_note(request, note_name):
     folders = Folder.objects.filter(user=request.user)
     note = get_object_or_404(Notes, name=note_name, user=request.user)
@@ -245,7 +250,7 @@ def show_note(request, note_name):
         note.save()
         return redirect(f'/viewnotes/{note.folder}')
     
-    return render(request, 'viewnote.html', {
+    return render(request, 'mobile/viewnote.html', {
         'searched_note': note_name, 
         'note_text': note.text,
         'folders': folders,
