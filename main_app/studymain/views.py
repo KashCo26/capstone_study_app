@@ -279,14 +279,14 @@ def quiz_options(request):
 # @login_required  
 def generate_quiz_session(request):
     if request.method != 'POST':
-        return redirect('quiz_options')
+        return redirect('quizselect')
         
     selected_format = request.POST.get('selected_format')
     time_chosen = request.POST.get('time-chosen')
     selected_note_ids = request.POST.getlist('selected_notes') 
     
     if not selected_note_ids:
-        return redirect('quiz_options')
+        return redirect('quizselect')
 
     selected_notes_records = Notes.objects.filter(id__in=selected_note_ids, user=request.user)
     combined_notes_text = ""
@@ -381,9 +381,9 @@ def generate_quiz_session(request):
         generated_cards = ai_payload.get('cards', [])
 
     except Exception as e:
-        print(f"Failed to generate quiz: {e}")
+        print(f"Failed to generate quiz: {e}"),
     
-    return render(request, 'active_quiz_session.html', {
+    return render(request, 'mobile/active_quiz_session.html', {
         'title': quiz_title,
         'quiz_cards': generated_cards,
         'duration': time_chosen
