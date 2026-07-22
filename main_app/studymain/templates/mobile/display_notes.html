@@ -8,29 +8,93 @@
             <i class="fas fa-arrow-left text-lg"></i>
             <div class="flex flex-col">
                 <h1 class="font-bold text-lg tracking-tight">{{ searched_folder }}</h1>
-                <p class="text-sm">{{ num_notes }} Notes</p>
+                <p class="text-sm">{{ num_notes }} Note{{ num_notes.count|pluralize }}</p>
             </div>
         </a>
     </div>
     
-    <a href="{% url 'newnote' %}" class="btn btn-primary mt-5">
+    <a href="{% url 'newnote' %}" class="btn btn-primary mt-1">
     +
     </a>
 </header>
 
 <div class="flex flex-col gap-3 mt-6">
     {% for note in notes %}
-        <div class="bg-base-100 rounded-lg shadow-md p-5 flex flex-col">
-            <a href="{% url 'notecontent' note.name %}">
+        <div class="relative group">
+            <a href="{% url 'notecontent' note.name %}" class="bg-base-100 rounded-lg shadow-md p-5 flex flex-col">
                 <h3 class="font-bold text-md mb-2">{{ note.name|truncatechars:20 }}</h3>
                 <p class="text-sm">{{ note.text|striptags|truncatechars:150 }}</p>
                 <div class="items-right justify-right text-right p-1">
                     <small class="text-xs">Created: {{ note.created_at|date:"m-d-Y" }}</small>
                 </div>
             </a>
+
+            <div class="dropdown dropdown-end absolute top-2 right-2 z-10" onclick="event.preventDefault(); event.stopPropagation();">
+                <div tabindex="0" role="button" class="btn btn-ghost btn-xs btn-circle text-base-content/50 hover:text-base-content">
+                    <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+                </div>
+
+                <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-base-100 rounded-box w-32 text-xs gap-1 border border-base-200 z-[20]">
+                    <li>
+                        <button type="button" class="hover:bg-base-200 text-left w-full py-1.5 px-2" onclick="document.getElementById('renameModal_{{ note.id }}').showModal();">
+                            Rename
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="text-error hover:bg-error/10 text-left w-full py-1.5 px-2" onclick="document.getElementById('deleteModal_{{ note.id }}').showModal();">
+                            Delete
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <dialog id="renameModal_{{ note.id }}" class="modal modal-middle sm:modal-middle backdrop:bg-black/50">
+                <div class="modal-box bg-base-100 p-6 rounded-2xl border border-base-300 max-w-sm w-11/12 mx-auto">
+                    <h3 class="font-bold text-lg text-base-content mb-4">Rename Note</h3>
+                    <form method="POST" action="" class="space-y-4">
+                        {% csrf_token %}
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-semibold text-xs text-base-content/70">Note Name</span>
+                            </label>
+                            <input type="hidden" name="note_id" value="{{ note.id }}">
+                            <input type="text" name="new_note_name" value="{{ note.name }}" class="input input-bordered w-full bg-base-200 text-base-content placeholder-base-content/40 focus:outline-none focus:border-primary" required />
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" onclick="document.getElementById('renameModal_{{ note.id }}').close();" class="btn btn-ghost btn-sm text-xs">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-sm text-xs bg-accent border-0 text-accent-content">
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </dialog>
+
+            <dialog id="deleteModal_{{ note.id }}" class="modal modal-middle sm:modal-middle backdrop:bg-black/50">
+                <div class="modal-box bg-base-100 p-6 rounded-2xl border border-base-300 max-w-sm w-11/12 mx-auto">
+                    <h3 class="font-bold text-lg text-base-content mb-4">Are you sure you want to delete {{note.name}}?</h3>
+                    <form method="POST" action="" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="deleted_note" value="{{ note.id }}">
+
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" onclick="document.getElementById('deleteModal_{{ note.id }}').close();" class="btn btn-ghost btn-sm text-xs">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-error btn-sm text-xs text-white">
+                                Delete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </dialog>
+
         </div>
     {% empty %}
-        <div href="{% url 'notecontent' note.name %}" class="col-span-full text-center py-16 px-4 bg-base-100 border-2 border-dashed border-gray-200 rounded-2xl">
+        <div class="col-span-full text-center py-16 px-4 bg-base-100 border-2 border-dashed border-gray-200 rounded-2xl">
             <i class="fa-solid fa-folder-open text-4xl text-base-content mb-3 block"></i>
             <p class="text-sm font-medium text-base-content">No notes created yet. Start by creating one using the plus button above!</p>
         </div>

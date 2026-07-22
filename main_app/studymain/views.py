@@ -157,7 +157,7 @@ def home_screen(request):
 # @login_required
 def study_folders(request):
     request.user = User.objects.get(username='kashvig')
-    folders = Folder.objects.filter(user=request.user)
+    folders = Folder.objects.filter(user=request.user).order_by('-created_at').prefetch_related('notes')
     if request.method == 'POST':
         folder_name = request.POST.get('folder_name')
         folder_id = request.POST.get('folder_id')
@@ -198,7 +198,7 @@ def create_note(request):
             chosen_folder = Folder.objects.get(id=folder_id)
         if note_name and note_text and chosen_folder:
             Notes.objects.create(name=note_name, text=note_text, folder=chosen_folder, user=request.user)
-            return redirect('folders')
+            return redirect(f'/viewnotes/{chosen_folder.name}')
     return render(request, 'mobile/newnote.html', {'folders': folders})
 
 # @login_required
@@ -207,9 +207,9 @@ def display_notes(request, folder_name):
     notes_match = None
     
     if folder_name:
-        notes_match = Notes.objects.filter(folder__name__iexact=folder_name, user=request.user)
+        notes_match = Notes.objects.filter(folder__name__iexact=folder_name, user=request.user).order_by('-created_at')
     else:
-        notes_match = Notes.objects.filter(folder__name__iexact=folder_name, user=request.user)
+        notes_match = Notes.objects.filter(folder__name__iexact=folder_name, user=request.user).order_by('-created_at')
     
     num_notes = len(notes_match)
         
@@ -237,6 +237,7 @@ def display_notes(request, folder_name):
     
 # @login_required
 def show_note(request, note_name):
+    request.user = User.objects.get(username='kashvig')
     folders = Folder.objects.filter(user=request.user)
     note = get_object_or_404(Notes, name=note_name, user=request.user)
     new_name = request.POST.get('note_name')
@@ -260,7 +261,8 @@ def show_note(request, note_name):
     
 # @login_required
 def quiz_options(request):
-    folders = Folder.objects.filter(user=request.user)
+    #if folders is on mobile then do the line below else remove prefetch related and keep the ifs
+    folders = Folder.objects.filter(user=request.user).prefetch_related('notes')
     notes = None
     folder_id = request.GET.get('selected_folder')
     
@@ -269,7 +271,7 @@ def quiz_options(request):
     else:
         notes = Notes.objects.filter(user=request.user)
     
-    return render(request, 'choosequiz.html', {
+    return render(request, 'mobile/choosequiz.html', {
         'folders': folders,
         'notes': notes,
     })

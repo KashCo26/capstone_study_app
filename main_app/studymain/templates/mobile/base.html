@@ -79,7 +79,7 @@
             <span class="text-[10px] font-bold tracking-wider uppercase">Folders</span>
         </a>
         
-        <a href="#" class="flex flex-col items-center justify-center text-base-content/60 gap-1">
+        <a href="{% url 'quizselect' %}" class="flex flex-col items-center justify-center text-base-content/60 gap-1 {% if request.resolver_match.url_name == 'quizselect' %}text-primary{% else %}text-base-content/60{% endif %}">
             <i class="fas fa-book text-xl"></i>
             <span class="text-[10px] font-bold tracking-wider uppercase">Lessons</span>
         </a>

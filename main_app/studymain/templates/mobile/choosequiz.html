@@ -1,0 +1,114 @@
+{% extends 'mobile/base.html' %}
+
+{% block content %}
+
+<div class="bg-base-100 rounded-lg shadow-md p-8 flex flex-col items-center justify-center text-center gap-3">
+    <h1 class="font-bold text-xl tracking-tight leading-none">What would you like to be quizzed on?</h1>
+    <p class="text-primary text-xs mt-1">Pick a subject, how long you've got, and how you want to answer.</p>
+
+    <div class="w-full mx-auto bg-base-100 border border-base-300 rounded-3xl p-6 shadow-sm text-left">
+        
+        <details class="collapse bg-transparent group">
+            <summary class="collapse-title flex items-center justify-between p-0 min-h-0 list-none [&::-webkit-details-marker]:hidden">
+                <div class="flex items-center gap-4">
+                    <div>
+                        <span class="block text-sm font-bold uppercase tracking-wider text-base-content/60">Subject or Topic</span>
+                        <h2 class="text-xs font-bold text-primary mt-0.5">Choose a subject or topic</h2>
+                    </div>
+                </div>
+
+                <div class="text-base-content/50 transition-transform duration-200 group-open:rotate-180">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                    </svg>
+                </div>
+            </summary>
+
+            <div class="collapse-content p-0 mt-6 pt-6 border-t border-base-200 space-y-3">
+                {% for folder in folders %}
+                    
+                    <details class="group/folder bg-base-200/50 rounded-2xl p-3">
+                        <summary class="flex items-center justify-between list-none [&::-webkit-details-marker]:hidden">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-sm">
+                                    <i class="fa fa-folder text-primary"></i>
+                                </div>
+                                <span class="font-bold text-base-content text-sm">{{ folder.name }}</span>
+                            </div>
+                            
+                            <div class="text-base-content/50 transition-transform duration-200 group-open:rotate-180">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                </svg>
+                            </div>
+                        </summary>
+
+                        <div class="mt-3 pt-3 border-t border-base-300/50 space-y-2 pl-2">
+                            {% for note in folder.notes.all %}
+                                <label class="flex items-center gap-3 p-2 rounded-xl">
+                                    <input type="hidden" id="renameFolderId" name="folder_id" value="{{ note.id }}">
+                                    <input type="checkbox" name="selected_notes" value="{{ note.id }}" class="checkbox checkbox-primary checkbox-xs" />
+                                    <span class="text-xs font-medium text-base-content/80">{{ note.name }}</span>
+                                </label>
+                            {% empty %}
+                                <p class="text-2xs text-base-content/50 italic py-1 pl-2">No notes in this folder yet.</p>
+                            {% endfor %}
+                        </div>
+                    </details>
+
+                {% empty %}
+                    <p class="text-xs text-base-content/60 text-center py-4">No folders available. Create one first!</p>
+                {% endfor %}
+            </div>
+        </details>
+    </div>
+
+    <div class="w-full mx-auto bg-base-100 border border-base-300 rounded-3xl p-2 shadow-sm text-left">
+        <input type="number" name = "time-chosen" placeholder="Enter study time..." step="1" min="1" onkeydown="if(['e', 'E', '.', ','].includes(event.key)) event.preventDefault();" class="input input-bordered w-full">
+    </div>
+
+    <div class="w-full mx-auto bg-base-100 border border-base-300 rounded-3xl p-6 shadow-sm text-left">
+        
+        <details class="collapse bg-transparent group">
+            <summary class="collapse-title flex items-center justify-between p-0 min-h-0 list-none [&::-webkit-details-marker]:hidden">
+                <div class="flex items-center gap-2">
+                    <div>
+                        <span class="block text-sm font-bold uppercase tracking-wider text-base-content/60">Answer Format</span>
+                    </div>
+                </div>
+
+                <div class="text-base-content/50 transition-transform duration-200 group-open:rotate-180">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                    </svg>
+                </div>
+            </summary>
+
+            <div class="collapse-content p-0 mt-6 pt-6 border-t border-base-200 space-y-1">
+                <label class="flex items-center gap-3 p-2 rounded-xl">
+                    <input type="radio" name="selected_notes" value="all" class="radio radio-primary radio-xs" />
+                    <span class="text-xs font-medium text-base-content/80">Mixed</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 rounded-xl">
+                    <input type="radio" name="selected_notes" value="true-false" class="radio radio-primary radio-xs" />
+                    <span class="text-xs font-medium text-base-content/80">True or False</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 rounded-xl">
+                    <input type="radio" name="selected_notes" value="mcq" class="radio radio-primary radio-xs" />
+                    <span class="text-xs font-medium text-base-content/80">Multiple Choice</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 rounded-xl">
+                    <input type="radio" name="selected_notes" value="allthatapply" class="radio radio-primary radio-xs" />
+                    <span class="text-xs font-medium text-base-content/80">Select all that apply</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 rounded-xl">
+                    <input type="radio" name="selected_notes" value="written" class="radio radio-primary radio-xs" />
+                    <span class="text-xs font-medium text-base-content/80">Written Response</span>
+                </label>
+            </div>
+        </details>
+    </div>
+
+</div>
+
+{% endblock %}
