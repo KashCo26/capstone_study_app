@@ -29,7 +29,7 @@
                         <option value="">Choose a folder or file...</option>
                         {% for folder in folders %}
                             <optgroup name= "folder_label" label="{{ folder.name }}">
-                                {% for note in folder.notes_set.all %}
+                                {% for note in folder.notes.all %}
                                     <option value="{{ note.id }}">{{ note.name }}</option>
                                 {% empty %}
                                     <option value="" disabled>No notes available.</option>
@@ -110,7 +110,7 @@
                                 </div>
                             </div>
                         {% endif %}
-                    </div>                </div>
+                    </div>
 
                 <div class="pt-4 border-t border-gray-200 flex items-center justify-between">
                     <button type="submit" name="action" value="generate_ai" id="aiBtn"

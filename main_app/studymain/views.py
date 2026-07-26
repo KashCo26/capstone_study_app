@@ -261,7 +261,9 @@ def show_note(request, note_name):
     
 # @login_required
 def quiz_options(request):
-    #if folders is on mobile then do the line below else remove prefetch related and keep the ifs
+    request.user = User.objects.get(username='kashvig')
+
+    #if on mobile then do the line below else remove prefetch related and keep the ifs
     folders = Folder.objects.filter(user=request.user).prefetch_related('notes')
     notes = None
     folder_id = request.GET.get('selected_folder')
@@ -278,6 +280,7 @@ def quiz_options(request):
 
 # @login_required  
 def generate_quiz_session(request):
+    request.user = User.objects.get(username='kashvig')
     if request.method != 'POST':
         return redirect('quizselect')
         
@@ -392,6 +395,8 @@ def generate_quiz_session(request):
 
 # @login_required
 def new_quiz(request):
+    request.user = User.objects.get(username='kashvig')
+    
     folders = Folder.objects.filter(user=request.user)
     notes = None
     folder_id = request.GET.get('folder_label')
@@ -453,7 +458,7 @@ def new_quiz(request):
                 generated_cards = ai_data.get('cards', [])
                 print(generated_cards)
                 
-                return render(request, 'createquiz.html', {
+                return render(request, 'mobile/createquiz.html', {
                     'folders': folders,
                     'prefilled_name': set_name,
                     'prefilled_cards': generated_cards
@@ -491,10 +496,10 @@ def new_quiz(request):
                 return redirect('viewquizzes')
                 
     
-    return render(request, 'createquiz.html', {
+    return render(request, 'mobile/createquiz.html', {
         'folders': folders,
         'notes': notes
-        })
+    })
 
 # @login_required
 def see_quiz(request):

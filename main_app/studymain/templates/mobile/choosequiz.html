@@ -2,7 +2,6 @@
 
 {% block content %}
 
-
 <form method="POST" action="{% url 'takelesson' %}">
     {% csrf_token %}
 
@@ -111,7 +110,7 @@
                 </div>
             </details>
         </div>
-        <button type="submit" class="btn btn-accent w-full mt-3" style="height: 60;">Launch Quiz Session</button>
+        <button type="submit" class="btn btn-accent w-full mt-3 text-lg" style="height: 60;">Launch Quiz Session</button>
 
     </div>
 </form>

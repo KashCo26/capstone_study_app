@@ -84,7 +84,7 @@
             <span class="text-[10px] font-bold tracking-wider uppercase">Lessons</span>
         </a>
         
-        <a href="#" class="flex flex-col items-center justify-center text-base-content/60 gap-1">
+        <a href="{% url 'createquiz' %}" class="flex flex-col items-center justify-center text-base-content/60 gap-1 {% if request.resolver_match.url_name == 'createquiz' %}text-primary{% else %}text-base-content/60{% endif %}">
             <i class="fas fa-pen-to-square text-xl"></i>
             <span class="text-[10px] font-bold tracking-wider uppercase">Quizzes</span>
         </a>
