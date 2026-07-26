@@ -503,11 +503,13 @@ def new_quiz(request):
 
 # @login_required
 def see_quiz(request):
+    request.user = User.objects.get(username='kashvig')
     study_sets = StudySet.objects.filter(user=request.user).order_by('-created_at').prefetch_related('cards')
-    return render(request, 'viewquizzes.html', {'study_sets': study_sets})
+    return render(request, 'mobile/viewquizzes.html', {'study_sets': study_sets})
 
 # @login_required
 def quiz_edit(request, quiz_id):
+    request.user = User.objects.get(username='kashvig')
     study_set = get_object_or_404(StudySet, id=quiz_id, user=request.user)
     saved_card_ids = []
     flashcards_to_create = []
@@ -593,7 +595,7 @@ def quiz_edit(request, quiz_id):
             except Exception as e:
                 print(f"AI Generation failed: {e}")
             
-            return render(request, 'editquiz.html', {
+            return render(request, 'mobile/editquiz.html', {
                 'study_set': study_set,
                 'cards': cards_list
             })
@@ -640,13 +642,14 @@ def quiz_edit(request, quiz_id):
                 return redirect('viewquizzes')
             
     cards = study_set.cards.all()
-    return render(request, 'editquiz.html', {
+    return render(request, 'mobile/editquiz.html', {
         'study_set': study_set,
         'cards': cards
     })
 
 # @login_required
 def take_quiz_view(request, set_id):
+    request.user = User.objects.get(username='kashvig')
     client = OpenAI() 
     
     study_set = get_object_or_404(StudySet, id=set_id, user=request.user)
@@ -738,7 +741,7 @@ def take_quiz_view(request, set_id):
             'ai_distractors': distractors_list[:3]
         })
         
-    return render(request, 'practice_cards.html', {'cards': processed_cards, 'set_id': set_id})
+    return render(request, 'mobile/practice_cards.html', {'cards': processed_cards, 'set_id': set_id})
 
 # @login_required
 def flashcard_summary_view(request, set_id):

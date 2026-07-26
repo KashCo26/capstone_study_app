@@ -118,9 +118,15 @@
         </button>
     </div>
 
-    <button type="submit" class="btn btn-accent w-full">
-        Create Study Set
-    </button>
+    <div class="flex flex-row w-full gap-2">
+        <button type="submit" class="btn btn-accent" style="width: 60vw;">
+            Create Study Set
+        </button>
+        <button type="submit" id="namegenerateBtn" name="action" value="generate_ai" formnovalidate class="btn btn-primary">
+            <i class="fas fa-wand-magic-sparkles text-xl"></i>
+            AI
+        </button>    
+    </div>
 </form>
 
 <script>
@@ -129,6 +135,8 @@
         const addBtn = document.getElementById('addCardBtn');
         const generateBtn = document.getElementById('generateBtn');
         const noteSelect = document.getElementById('noteSelect');
+        const namegenerateBtn = document.getElementById('namegenerateBtn');
+        const setNameInput = document.getElementById('setNameInput');
 
         function updateCardNumbers() {
             const cards = container.querySelectorAll('.card-item');
@@ -191,6 +199,13 @@
             if (!noteSelect.value) {
                 e.preventDefault();
                 noteSelect.reportValidity();
+            }
+        });
+
+        namegenerateBtn.addEventListener('click', (e) => {
+            if (!setNameInput.value.trim()) {
+                e.preventDefault();
+                setNameInput.reportValidity();
             }
         });
     });

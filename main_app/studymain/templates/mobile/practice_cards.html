@@ -4,16 +4,16 @@
 
 <header class="fixed top-0 left-0 w-full z-[100] bg-base-100 border-b border-base-300 h-16 flex items-center justify-between px-8 gap-4">
     <div class="flex items-center gap-3">
-        <a href="{% url 'quizselect' %}" class="btn btn-neutral btn-sm">
+        <a href="{% url 'viewquizzes' %}" class="btn btn-neutral btn-sm">
             <i class="fas fa-x text-sm"></i>
         </a>
     </div>
 
     <div class="flex-1 max-w-xs flex flex-col items-center gap-1">
         <div class="flex justify-end w-full text-xs font-semibold text-base-content/70">
-            <span id="question-tracker">Question 1 of {{ quiz_cards|length }}</span>
+            <span id="question-tracker">Question 1 of {{ cards|length }}</span>
         </div>
-        <progress id="quiz-progress" class="progress progress-primary w-full h-2" value="1" max="{{ quiz_cards|length }}"></progress>
+        <progress id="quiz-progress" class="progress progress-primary w-full h-2" value="1" max="{{ cards|length }}"></progress>
     </div>
 
     <div id="quiz-timer" class="badge badge-neutral gap-1 text-xs font-mono py-3 px-3 shadow-sm">
@@ -23,53 +23,39 @@
 </header>
 
 <div class="max-w-xl mx-auto p-4 space-y-6 pt-20">
-    <h1 class="text-2xl font-bold text-center">{{ title }}</h1>
+    <h1 class="text-2xl font-bold text-center">Practice Quiz</h1>
 
     <div id="quiz-container">
-        {% for card in quiz_cards %}
+        {% for card in cards %}
             <div class="quiz-card bg-base-100 border border-base-300 rounded-2xl p-5 shadow-sm space-y-4 {% if not forloop.first %}hidden{% endif %}" 
                  data-index="{{ forloop.counter }}"
-                 data-answer="{{ card.answer }}"
-                 data-type="{{ card.type }}">
+                 data-answer="{{ card.back }}">
                 
                 <p class="font-semibold text-base">
                     <span class="text-xs text-primary uppercase font-bold tracking-wider block mb-1">
-                        Question {{ forloop.counter }} • {{ card.type }}
+                        Question {{ forloop.counter }}
                     </span>
-                    {{ card.question }}
+                    {{ card.front }}
                 </p>
 
                 <div class="options-container space-y-2">
-                    {% if card.type == 'mcq' or card.type == 'true-false' %}
-                        {% for option in card.options %}
-                            <label class="option-label flex items-center gap-3 p-3 bg-base-200/50 rounded-xl cursor-pointer hover:bg-base-200 border border-transparent transition-colors">
-                                <input type="radio" 
-                                       name="q_{{ forloop.parentloop.counter }}" 
-                                       value="{{ option }}" 
-                                       class="radio radio-primary radio-sm" />
-                                <span class="text-sm font-medium">{{ option }}</span>
-                            </label>
-                        {% endfor %}
+                    <label class="option-label flex items-center gap-3 p-3 bg-base-200/50 rounded-xl cursor-pointer hover:bg-base-200 border border-transparent transition-colors">
+                        <input type="radio" 
+                               name="q_{{ forloop.counter }}" 
+                               value="{{ card.back }}" 
+                               class="radio radio-primary radio-sm" />
+                        <span class="text-sm font-medium">{{ card.back }}</span>
+                    </label>
 
-                    {% elif card.type == 'allthatapply' %}
-                        {% for option in card.options %}
-                            <label class="option-label flex items-center gap-3 p-3 bg-base-200/50 rounded-xl cursor-pointer hover:bg-base-200 border border-transparent transition-colors">
-                                <input type="checkbox" 
-                                       name="q_{{ forloop.parentloop.counter }}" 
-                                       value="{{ option }}" 
-                                       class="checkbox checkbox-primary checkbox-sm" />
-                                <span class="text-sm font-medium">{{ option }}</span>
-                            </label>
-                        {% endfor %}
-
-                    {% elif card.type == 'written' %}
-                        <div>
-                            <textarea name="q_{{ forloop.counter }}" 
-                                      rows="3" 
-                                      placeholder="Type your response here..." 
-                                      class="textarea textarea-bordered w-full text-sm written-input"></textarea>
-                        </div>
-                    {% endif %}
+                    {% for option in card.ai_distractors %}
+                        <label class="option-label flex items-center gap-3 p-3 bg-base-200/50 rounded-xl cursor-pointer hover:bg-base-200 border border-transparent transition-colors">
+                            <input type="radio" 
+                                   name="q_{{ forloop.parentloop.counter }}" 
+                                   value="{{ option }}" 
+                                   class="radio radio-primary radio-sm" />
+                            <span class="text-sm font-medium">{{ option }}</span>
+                        </label>
+                    {% endfor %}
                 </div>
 
                 <div class="feedback-msg hidden p-3 rounded-xl text-sm font-medium space-y-2"></div>
@@ -85,25 +71,39 @@
 
             </div>
         {% empty %}
-            <p class="text-center text-sm text-base-content/60">No questions generated. Please try again.</p>
+            <p class="text-center text-sm text-base-content/60">No flashcards created. Please go back and create some flashcards.</p>
         {% endfor %}
     </div>
 
     <div id="quiz-complete" class="hidden text-center bg-base-100 border border-base-300 rounded-2xl p-8 space-y-4">
         <h2 class="text-2xl font-bold" id="complete-title">Quiz Complete! 🎉</h2>
         <p class="text-sm text-base-content/70" id="final-score"></p>
-        <a href="{% url 'quizselect' %}" class="btn btn-primary w-full">Back to Quizzes</a>
+        <a href="{% url 'viewquizzes' %}" class="btn btn-primary w-full">Back to Quizzes</a>
     </div>
 </div>
 
 <script>
     let currentQuestion = 1;
-    const totalQuestions = {{ quiz_cards|length }};
+    const totalQuestions = {{ cards|length }};
     let score = 0;
 
-    const durationMinutes = parseInt("{{ duration|default:'5' }}", 10); 
+    const durationMinutes = 15; 
     let timeRemaining = durationMinutes * 60; 
     let timerInterval = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Randomize option order for each question card on load
+        document.querySelectorAll('.options-container').forEach(container => {
+            const options = Array.from(container.children);
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+            options.forEach(option => container.appendChild(option));
+        });
+
+        startTimer();
+    });
 
     function startTimer() {
         const timerDisplay = document.getElementById('timer-display');
@@ -131,75 +131,36 @@
         timerInterval = setInterval(updateTimer, 1000);
     }
 
-    startTimer();
-
     function checkAnswer(btn) {
         const card = btn.closest('.quiz-card');
-        const qType = card.dataset.type;
         const correctAnswer = card.dataset.answer.trim();
         const feedback = card.querySelector('.feedback-msg');
-        
-        let userAnswers = [];
+        const selectedRadio = card.querySelector('input[type="radio"]:checked');
 
-        if (qType === 'mcq' || qType === 'true-false') {
-            const selected = card.querySelector('input[type="radio"]:checked');
-            if (selected) userAnswers.push(selected.value.trim());
-        } else if (qType === 'allthatapply') {
-            const checkedBoxes = card.querySelectorAll('input[type="checkbox"]:checked');
-            checkedBoxes.forEach(cb => userAnswers.push(cb.value.trim()));
-        } else if (qType === 'written') {
-            const text = card.querySelector('.written-input').value.trim();
-            if (text) userAnswers.push(text);
-        }
-
-        if (userAnswers.length === 0) {
-            alert('Please select or write an answer before submitting!');
+        if (!selectedRadio) {
+            alert('Please select an option before submitting.');
             return;
         }
 
-        let isCorrect = false;
-
-        if (qType === 'allthatapply') {
-            const correctSet = correctAnswer.split(',').map(s => s.trim()).sort().join(',');
-            const userSet = userAnswers.sort().join(',');
-            isCorrect = (correctSet.toLowerCase() === userSet.toLowerCase());
-        } else if (qType === 'written') {
-            isCorrect = userAnswers[0].toLowerCase() === correctAnswer.toLowerCase();
-        } else {
-            isCorrect = (userAnswers[0] === correctAnswer);
-        }
+        const userAnswer = selectedRadio.value.trim();
+        const isCorrect = (userAnswer === correctAnswer);
 
         feedback.classList.remove('hidden');
+        
         if (isCorrect) {
             score++;
             feedback.className = "feedback-msg p-3 rounded-xl text-sm font-medium bg-success/15 text-success border border-success/30";
             feedback.innerHTML = `<strong>Correct!</strong> Great job!`;
         } else {
             feedback.className = "feedback-msg p-3 rounded-xl text-sm font-medium bg-error/15 text-error border border-error/30";
-            
-            let feedbackHTML = `<div><strong>Incorrect.</strong> Correct answer: <em>${correctAnswer}</em></div>`;
-            if (qType === 'written') {
-                feedbackHTML += `
-                    <div class="pt-1">
-                        <button type="button" class="btn btn-xs btn-outline btn-warning gap-1" onclick="overrideWritten(this)">
-                            <i class="fas fa-check"></i> I was right (Override)
-                        </button>
-                    </div>`;
-            }
-            feedback.innerHTML = feedbackHTML;
+            feedback.innerHTML = `
+                <div><strong>Incorrect.</strong> Correct answer: <em>${correctAnswer}</em></div>`;
         }
 
-        card.querySelectorAll('input, textarea').forEach(i => i.disabled = true);
+        card.querySelectorAll('input').forEach(i => i.disabled = true);
 
         btn.classList.add('hidden');
         card.querySelector('.next-btn').classList.remove('hidden');
-    }
-
-    function overrideWritten(overrideBtn) {
-        score++;
-        const feedback = overrideBtn.closest('.feedback-msg');
-        feedback.className = "feedback-msg p-3 rounded-xl text-sm font-medium bg-success/15 text-success border border-success/30";
-        feedback.innerHTML = `<strong>Overridden!</strong> Marked as correct (+1 point).`;
     }
 
     function nextQuestion(btn) {
@@ -210,7 +171,9 @@
 
         if (currentQuestion <= totalQuestions) {
             const nextCard = document.querySelector(`.quiz-card[data-index="${currentQuestion}"]`);
-            nextCard.classList.remove('hidden');
+            if (nextCard) {
+                nextCard.classList.remove('hidden');
+            }
 
             document.getElementById('question-tracker').innerText = `Question ${currentQuestion} of ${totalQuestions}`;
             document.getElementById('quiz-progress').value = currentQuestion;
